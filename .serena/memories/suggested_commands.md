@@ -21,7 +21,7 @@
 
 - `ls -la` - ファイル一覧（隠しファイル含む）
 - `find . -name "*.ts" -o -name "*.tsx"` - TypeScriptファイル検索
-- `grep -r "pattern" source/` - ソースディレクトリ内検索
+- `grep -r "pattern" src/` - ソースディレクトリ内検索
 
 ## パッケージ管理
 
@@ -33,4 +33,4 @@
 ## 実行・テスト
 
 - `node dist/cli.js` - ビルド後の実行
-- `bun run source/cli.tsx` - 直接実行（開発時）
+- `bun run src/cli.tsx` - 直接実行（開発時）
