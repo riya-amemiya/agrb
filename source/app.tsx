@@ -1,19 +1,21 @@
 import { Box, Text } from "ink";
+import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GitOperations } from "./git.js";
 
 type Props = {
-	targetBranch: string;
+	targetBranch?: string;
 };
 
-type Status = "loading" | "success" | "error";
+type Status = "loading" | "success" | "error" | "selecting";
 
 interface RebaseState {
 	status: Status;
 	message: string;
 	currentBranch?: string;
-	targetBranch: string;
+	targetBranch?: string;
+	availableBranches?: string[];
 }
 
 export default function App({ targetBranch }: Props) {
@@ -22,6 +24,56 @@ export default function App({ targetBranch }: Props) {
 		message: "Initializing...",
 		targetBranch,
 	});
+
+	const performRebaseWithBranch = useCallback(
+		async (currentBranch: string, target: string) => {
+			try {
+				const gitOps = new GitOperations();
+
+				setState({
+					status: "loading",
+					message: `Rebasing ${currentBranch} onto ${target}`,
+					currentBranch,
+					targetBranch: target,
+				});
+
+				setState({
+					status: "loading",
+					message: "Starting rebase...",
+					currentBranch,
+					targetBranch: target,
+				});
+				await gitOps.performLocalRebase(
+					currentBranch,
+					target,
+					(message: string) => {
+						setState((prev) => ({
+							...prev,
+							message,
+						}));
+					},
+				);
+
+				setState({
+					status: "success",
+					message: `Successfully rebased ${currentBranch} onto ${target}!`,
+					currentBranch,
+					targetBranch: target,
+				});
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error ? error.message : String(error);
+
+				setState({
+					status: "error",
+					message: `Failed to rebase: ${errorMessage}`,
+					currentBranch,
+					targetBranch: target,
+				});
+			}
+		},
+		[],
+	);
 
 	useEffect(() => {
 		async function performRebase() {
@@ -40,49 +92,48 @@ export default function App({ targetBranch }: Props) {
 				});
 				const currentBranch = await gitOps.getCurrentBranch();
 
-				setState({
-					status: "loading",
-					message: `Rebasing ${currentBranch} onto ${targetBranch}`,
-					currentBranch,
-					targetBranch,
-				});
+				if (!targetBranch) {
+					setState({
+						status: "loading",
+						message: "Getting available branches...",
+						currentBranch,
+					});
+					const branches = await gitOps.getAllBranches();
+					const filteredBranches = branches.filter(
+						(branch) => branch !== currentBranch,
+					);
 
-				setState({
-					status: "loading",
-					message: "Starting rebase...",
-					targetBranch,
-				});
-				await gitOps.performLocalRebase(
-					currentBranch,
-					targetBranch,
-					(message: string) => {
-						setState((prev) => ({
-							...prev,
-							message,
-						}));
-					},
-				);
+					setState({
+						status: "selecting",
+						message: "Select target branch:",
+						currentBranch,
+						availableBranches: filteredBranches,
+					});
+					return;
+				}
 
-				setState({
-					status: "success",
-					message: `Successfully rebased ${currentBranch} onto ${targetBranch}!`,
-					currentBranch,
-					targetBranch,
-				});
+				await performRebaseWithBranch(currentBranch, targetBranch);
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error ? error.message : String(error);
 
 				setState({
 					status: "error",
-					message: `Failed to rebase: ${errorMessage}`,
+					message: `Failed to setup: ${errorMessage}`,
+					currentBranch: undefined,
 					targetBranch,
 				});
 			}
 		}
 
 		performRebase();
-	}, [targetBranch]);
+	}, [targetBranch, performRebaseWithBranch]);
+
+	const handleBranchSelect = (item: { label: string; value: string }) => {
+		if (state.currentBranch) {
+			performRebaseWithBranch(state.currentBranch, item.value);
+		}
+	};
 
 	return (
 		<Box flexDirection="column" padding={1}>
@@ -108,6 +159,18 @@ export default function App({ targetBranch }: Props) {
 						</Text>{" "}
 						{state.message}
 					</Text>
+				)}
+				{state.status === "selecting" && state.availableBranches && (
+					<>
+						<Text>{state.message}</Text>
+						<SelectInput
+							items={state.availableBranches.map((branch) => ({
+								label: branch,
+								value: branch,
+							}))}
+							onSelect={handleBranchSelect}
+						/>
+					</>
 				)}
 				{state.status === "success" && (
 					<Text color="green">✅ {state.message}</Text>
