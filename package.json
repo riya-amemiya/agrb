@@ -17,9 +17,13 @@
 		"dist"
 	],
 	"dependencies": {
+		"@octokit/rest": "^22.0.0",
 		"ink": "^4.1.0",
+		"ink-select-input": "^6.2.0",
+		"ink-spinner": "^5.0.0",
 		"meow": "^11.0.0",
-		"react": "^18.2.0"
+		"react": "^18.2.0",
+		"simple-git": "^3.28.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.4",

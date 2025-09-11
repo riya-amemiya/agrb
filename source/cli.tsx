@@ -6,23 +6,29 @@ import App from "./app.js";
 const cli = meow(
 	`
 	Usage
-	  $ auto-rebase
+	  $ auto-rebase [options]
 
 	Options
-		--name  Your name
+		--target <branch>    Target branch to rebase onto (required)
 
 	Examples
-	  $ auto-rebase --name=Jane
-	  Hello, Jane
+	  $ auto-rebase --target main
+	  $ auto-rebase --target develop
 `,
 	{
 		importMeta: import.meta,
 		flags: {
-			name: {
+			target: {
 				type: "string",
+				shortFlag: "t",
 			},
 		},
 	},
 );
 
-render(<App name={cli.flags.name} />);
+if (!cli.flags.target) {
+	console.error("Error: Target branch is required. Use --target flag");
+	process.exit(1);
+}
+
+render(<App targetBranch={cli.flags.target} />);

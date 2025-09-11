@@ -5,12 +5,12 @@
 ## Install
 
 ```bash
-$ npm install --global auto-rebase
+npm install --global auto-rebase
 ```
 
 ## CLI
 
-```
+```bash
 $ auto-rebase --help
 
   Usage
