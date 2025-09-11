@@ -192,7 +192,7 @@ export class GitOperations {
 				} catch (error) {
 					const errorMessage =
 						error instanceof Error ? error.message : String(error);
-					if (options?.skip && errorMessage.includes("empty")) {
+					if (options?.skip && (errorMessage.includes("empty") || errorMessage.includes("CONFLICT"))) {
 						try {
 							await this.git.raw(["cherry-pick", "--skip"]);
 							continue;
