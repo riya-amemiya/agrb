@@ -5,7 +5,7 @@
 - `@sindresorhus/tsconfig`を継承
 - JSX: react-jsx
 - 出力ディレクトリ: `dist/`
-- ソースディレクトリ: `source/`
+- ソースディレクトリ: `src/`
 
 ## Biome設定による規約
 
