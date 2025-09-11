@@ -163,6 +163,7 @@ export class GitOperations {
 					await this.cherryPick(commit);
 				} catch (error) {
 					await this.abortCherryPick();
+					await this.git.checkout(currentBranch);
 					throw new Error(
 						`Failed to cherry-pick commit ${commit}: ${error instanceof Error ? error.message : String(error)}`,
 					);
