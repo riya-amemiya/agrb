@@ -167,7 +167,8 @@ export class GitOperations {
 						await this.cherryPick(commit);
 					}
 				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
+					const errorMessage =
+						error instanceof Error ? error.message : String(error);
 					if (options?.skip && errorMessage.includes("empty")) {
 						try {
 							await this.git.raw(["cherry-pick", "--skip"]);
@@ -176,7 +177,9 @@ export class GitOperations {
 					}
 					await this.abortCherryPick();
 					await this.git.checkout(currentBranch);
-					throw new Error(`Failed to cherry-pick commit ${commit}: ${errorMessage}`);
+					throw new Error(
+						`Failed to cherry-pick commit ${commit}: ${errorMessage}`,
+					);
 				}
 			}
 
