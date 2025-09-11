@@ -10,11 +10,14 @@ const cli = meow(
 
 	Options
 		--target <branch>    Target branch to rebase onto (optional, interactive selection if omitted)
+		--allow-empty        Allow empty commits during cherry-pick
+		--skip               Skip empty commits during cherry-pick
 
 	Examples
 	  $ auto-rebase --target main
 	  $ auto-rebase --target develop
-	  $ auto-rebase
+	  $ auto-rebase --allow-empty
+	  $ auto-rebase --skip
 `,
 	{
 		importMeta: import.meta,
@@ -23,8 +26,14 @@ const cli = meow(
 				type: "string",
 				shortFlag: "t",
 			},
+			allowEmpty: {
+				type: "boolean",
+			},
+			skip: {
+				type: "boolean",
+			},
 		},
 	},
 );
 
-render(<App targetBranch={cli.flags.target} />);
+render(<App targetBranch={cli.flags.target} allowEmpty={cli.flags.allowEmpty} skip={cli.flags.skip} />);

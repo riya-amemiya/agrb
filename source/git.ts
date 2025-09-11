@@ -132,46 +132,63 @@ export class GitOperations {
 		currentBranch: string,
 		targetBranch: string,
 		progressCallback?: (message: string) => void,
+		options?: { allowEmpty?: boolean; skip?: boolean },
 	): Promise<void> {
 		const tempBranchName = `temp-rebase-${process.pid}`;
 
-		progressCallback?.("Fetching all branches...");
-		await this.fetchAll();
+		try {
+			progressCallback?.("Fetching all branches...");
+			await this.fetchAll();
 
-		progressCallback?.("Checking if target branch exists...");
-		if (!(await this.branchExists(targetBranch))) {
-			throw new Error(`Target branch '${targetBranch}' does not exist`);
-		}
-
-		progressCallback?.("Finding merge base and commits...");
-		const mergeBase = await this.getMergeBase(targetBranch, currentBranch);
-		const commits = await this.getCommitsBetween(mergeBase, currentBranch);
-
-		progressCallback?.("Creating temporary branch...");
-		await this.createTemporaryBranch(tempBranchName, targetBranch);
-
-		progressCallback?.("Applying commits...");
-		for (const commit of commits) {
-			if (await this.isCommitMerge(commit)) {
-				progressCallback?.(`Skipping merge commit: ${commit}`);
-				continue;
+			progressCallback?.("Checking if target branch exists...");
+			if (!(await this.branchExists(targetBranch))) {
+				throw new Error(`Target branch '${targetBranch}' does not exist`);
 			}
 
-			progressCallback?.(`Applying commit: ${commit}`);
+			progressCallback?.("Finding merge base and commits...");
+			const mergeBase = await this.getMergeBase(targetBranch, currentBranch);
+			const commits = await this.getCommitsBetween(mergeBase, currentBranch);
+
+			progressCallback?.("Creating temporary branch...");
+			await this.createTemporaryBranch(tempBranchName, targetBranch);
+
+			progressCallback?.("Applying commits...");
+			for (const commit of commits) {
+				if (await this.isCommitMerge(commit)) {
+					progressCallback?.(`Skipping merge commit: ${commit}`);
+					continue;
+				}
+
+				progressCallback?.(`Applying commit: ${commit}`);
+				try {
+					if (options?.allowEmpty) {
+						await this.git.raw(["cherry-pick", "--allow-empty", commit]);
+					} else {
+						await this.cherryPick(commit);
+					}
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					if (options?.skip && errorMessage.includes("empty")) {
+						try {
+							await this.git.raw(["cherry-pick", "--skip"]);
+							continue;
+						} catch {}
+					}
+					await this.abortCherryPick();
+					await this.git.checkout(currentBranch);
+					throw new Error(`Failed to cherry-pick commit ${commit}: ${errorMessage}`);
+				}
+			}
+
+			progressCallback?.("Updating current branch...");
+			await this.git.checkout(currentBranch);
+			await this.git.raw(["reset", "--hard", tempBranchName]);
+
+			progressCallback?.("Rebase completed successfully");
+		} finally {
 			try {
-				await this.cherryPick(commit);
-			} catch (error) {
-				await this.abortCherryPick();
-				throw new Error(
-					`Failed to cherry-pick commit ${commit}: ${error instanceof Error ? error.message : String(error)}`,
-				);
-			}
+				await this.git.raw(["branch", "-D", tempBranchName]);
+			} catch {}
 		}
-
-		progressCallback?.("Updating current branch...");
-		await this.git.checkout(currentBranch);
-		await this.git.raw(["reset", "--hard", tempBranchName]);
-
-		progressCallback?.("Rebase completed successfully");
 	}
 }
