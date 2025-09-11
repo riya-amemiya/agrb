@@ -8,6 +8,9 @@ type Props = {
 	targetBranch?: string;
 	allowEmpty?: boolean;
 	skip?: boolean;
+	linear?: boolean;
+	continueOnConflict?: boolean;
+	remoteTarget?: boolean;
 };
 
 type Status = "loading" | "success" | "error" | "selecting";
@@ -20,7 +23,14 @@ interface RebaseState {
 	availableBranches?: string[];
 }
 
-export default function App({ targetBranch, allowEmpty, skip }: Props) {
+export default function App({
+	targetBranch,
+	allowEmpty,
+	skip,
+	linear,
+	continueOnConflict,
+	remoteTarget,
+}: Props) {
 	const [state, setState] = useState<RebaseState>({
 		status: "loading",
 		message: "Initializing...",
@@ -54,7 +64,7 @@ export default function App({ targetBranch, allowEmpty, skip }: Props) {
 							message,
 						}));
 					},
-					{ allowEmpty, skip },
+					{ allowEmpty, skip, linear, continueOnConflict },
 				);
 
 				setState({
@@ -75,7 +85,7 @@ export default function App({ targetBranch, allowEmpty, skip }: Props) {
 				});
 			}
 		},
-		[allowEmpty, skip],
+		[allowEmpty, skip, linear, continueOnConflict],
 	);
 
 	useEffect(() => {
@@ -101,7 +111,9 @@ export default function App({ targetBranch, allowEmpty, skip }: Props) {
 						message: "Getting available branches...",
 						currentBranch,
 					});
-					const branches = await gitOps.getAllBranches();
+					const branches = remoteTarget
+						? await gitOps.getAllBranches()
+						: await gitOps.getLocalBranches();
 					const filteredBranches = branches.filter(
 						(branch) => branch !== currentBranch,
 					);
@@ -130,7 +142,7 @@ export default function App({ targetBranch, allowEmpty, skip }: Props) {
 		}
 
 		performRebase();
-	}, [targetBranch, performRebaseWithBranch]);
+	}, [targetBranch, performRebaseWithBranch, remoteTarget]);
 
 	const handleBranchSelect = (item: { label: string; value: string }) => {
 		if (state.currentBranch) {

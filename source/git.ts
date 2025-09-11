@@ -55,6 +55,15 @@ export class GitOperations {
 			.map((branch) => (branch as string).replace("origin/", ""));
 	}
 
+	async getLocalBranches(): Promise<string[]> {
+		const branches = await this.git.branch(["-l"]);
+		return branches.all
+			.filter(
+				(branch) => typeof branch === "string" && !branch.includes("HEAD"),
+			)
+			.map((branch) => (branch as string).replace("* ", ""));
+	}
+
 	async fetchAll(): Promise<void> {
 		await this.git.fetch(["--all"]);
 	}
@@ -132,7 +141,12 @@ export class GitOperations {
 		currentBranch: string,
 		targetBranch: string,
 		progressCallback?: (message: string) => void,
-		options?: { allowEmpty?: boolean; skip?: boolean },
+		options?: {
+			allowEmpty?: boolean;
+			skip?: boolean;
+			linear?: boolean;
+			continueOnConflict?: boolean;
+		},
 	): Promise<void> {
 		const tempBranchName = `temp-rebase-${process.pid}`;
 
@@ -143,6 +157,15 @@ export class GitOperations {
 			progressCallback?.("Checking if target branch exists...");
 			if (!(await this.branchExists(targetBranch))) {
 				throw new Error(`Target branch '${targetBranch}' does not exist`);
+			}
+
+			if (options?.linear) {
+				return await this.performLinearRebase(
+					currentBranch,
+					targetBranch,
+					progressCallback,
+					options,
+				);
 			}
 
 			progressCallback?.("Finding merge base and commits...");
@@ -167,8 +190,13 @@ export class GitOperations {
 						await this.cherryPick(commit);
 					}
 				} catch (error) {
-					const errorMessage = error instanceof Error ? error.message : String(error);
-					if (options?.skip && errorMessage.includes("empty")) {
+					const errorMessage =
+						error instanceof Error ? error.message : String(error);
+					if (
+						options?.skip &&
+						(errorMessage.includes("empty") ||
+							errorMessage.includes("CONFLICT"))
+					) {
 						try {
 							await this.git.raw(["cherry-pick", "--skip"]);
 							continue;
@@ -176,7 +204,9 @@ export class GitOperations {
 					}
 					await this.abortCherryPick();
 					await this.git.checkout(currentBranch);
-					throw new Error(`Failed to cherry-pick commit ${commit}: ${errorMessage}`);
+					throw new Error(
+						`Failed to cherry-pick commit ${commit}: ${errorMessage}`,
+					);
 				}
 			}
 
@@ -189,6 +219,56 @@ export class GitOperations {
 			try {
 				await this.git.raw(["branch", "-D", tempBranchName]);
 			} catch {}
+		}
+	}
+
+	async performLinearRebase(
+		currentBranch: string,
+		targetBranch: string,
+		progressCallback?: (message: string) => void,
+		options?: { continueOnConflict?: boolean },
+	): Promise<void> {
+		try {
+			progressCallback?.("Starting linear rebase...");
+
+			await this.git.checkout(currentBranch);
+
+			const rebaseArgs = ["rebase", `origin/${targetBranch}`];
+
+			if (options?.continueOnConflict) {
+				rebaseArgs.push("-X", "ours");
+			}
+
+			await this.git.raw(rebaseArgs);
+			progressCallback?.("Linear rebase completed successfully");
+		} catch (error) {
+			if (options?.continueOnConflict) {
+				try {
+					progressCallback?.(
+						"Conflicts detected, auto-resolving and continuing...",
+					);
+
+					await this.git.add(".");
+					await this.git.raw(["rebase", "--continue"]);
+					progressCallback?.(
+						"Linear rebase completed with conflicts auto-resolved",
+					);
+				} catch {
+					try {
+						await this.git.raw(["rebase", "--abort"]);
+					} catch {}
+					throw new Error(
+						`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
+					);
+				}
+			} else {
+				try {
+					await this.git.raw(["rebase", "--abort"]);
+				} catch {}
+				throw new Error(
+					`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
+				);
+			}
 		}
 	}
 }
