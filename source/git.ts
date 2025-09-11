@@ -192,7 +192,11 @@ export class GitOperations {
 				} catch (error) {
 					const errorMessage =
 						error instanceof Error ? error.message : String(error);
-					if (options?.skip && (errorMessage.includes("empty") || errorMessage.includes("CONFLICT"))) {
+					if (
+						options?.skip &&
+						(errorMessage.includes("empty") ||
+							errorMessage.includes("CONFLICT"))
+					) {
 						try {
 							await this.git.raw(["cherry-pick", "--skip"]);
 							continue;
@@ -243,10 +247,12 @@ export class GitOperations {
 					progressCallback?.(
 						"Conflicts detected, auto-resolving and continuing...",
 					);
-					
+
 					await this.git.add(".");
 					await this.git.raw(["rebase", "--continue"]);
-					progressCallback?.("Linear rebase completed with conflicts auto-resolved");
+					progressCallback?.(
+						"Linear rebase completed with conflicts auto-resolved",
+					);
 				} catch {
 					try {
 						await this.git.raw(["rebase", "--abort"]);
