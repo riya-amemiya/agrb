@@ -1,5 +1,7 @@
 # auto-rebase
 
+<a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
+
 Interactive CLI to safely rebase a branch onto another. Supports two strategies:
 
 - Cherry-pick based replay that skips merge commits

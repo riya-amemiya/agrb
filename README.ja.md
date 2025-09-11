@@ -1,5 +1,7 @@
 # auto-rebase
 
+<a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
+
 対話的にブランチを別ブランチへ安全に載せ替えるCLIです。`cherry-pick`ベースの「マージコミットを除外した巻き直し」と、純粋な`git rebase`による線形履歴の両方をサポートします。Inkで実装されたUIにより、対象ブランチをインタラクティブに選択できます。
 
 ## インストール
