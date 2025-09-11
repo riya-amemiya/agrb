@@ -9,11 +9,12 @@ const cli = meow(
 	  $ auto-rebase [options]
 
 	Options
-		--target <branch>    Target branch to rebase onto (required)
+		--target <branch>    Target branch to rebase onto (optional, interactive selection if omitted)
 
 	Examples
 	  $ auto-rebase --target main
 	  $ auto-rebase --target develop
+	  $ auto-rebase
 `,
 	{
 		importMeta: import.meta,
@@ -25,10 +26,5 @@ const cli = meow(
 		},
 	},
 );
-
-if (!cli.flags.target) {
-	console.error("Error: Target branch is required. Use --target flag");
-	process.exit(1);
-}
 
 render(<App targetBranch={cli.flags.target} />);

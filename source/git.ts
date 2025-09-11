@@ -43,6 +43,18 @@ export class GitOperations {
 		return status.current || "HEAD";
 	}
 
+	async getAllBranches(): Promise<string[]> {
+		const branches = await this.git.branch(["-r"]);
+		return branches.all
+			.filter(
+				(branch) =>
+					typeof branch === "string" &&
+					branch.startsWith("origin/") &&
+					!branch.includes("HEAD"),
+			)
+			.map((branch) => (branch as string).replace("origin/", ""));
+	}
+
 	async fetchAll(): Promise<void> {
 		await this.git.fetch(["--all"]);
 	}
