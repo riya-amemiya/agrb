@@ -132,6 +132,7 @@ export class GitOperations {
 		currentBranch: string,
 		targetBranch: string,
 		progressCallback?: (message: string) => void,
+		options?: { allowEmpty?: boolean; skip?: boolean },
 	): Promise<void> {
 		const tempBranchName = `temp-rebase-${process.pid}`;
 
@@ -160,13 +161,22 @@ export class GitOperations {
 
 				progressCallback?.(`Applying commit: ${commit}`);
 				try {
-					await this.cherryPick(commit);
+					if (options?.allowEmpty) {
+						await this.git.raw(["cherry-pick", "--allow-empty", commit]);
+					} else {
+						await this.cherryPick(commit);
+					}
 				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					if (options?.skip && errorMessage.includes("empty")) {
+						try {
+							await this.git.raw(["cherry-pick", "--skip"]);
+							continue;
+						} catch {}
+					}
 					await this.abortCherryPick();
 					await this.git.checkout(currentBranch);
-					throw new Error(
-						`Failed to cherry-pick commit ${commit}: ${error instanceof Error ? error.message : String(error)}`,
-					);
+					throw new Error(`Failed to cherry-pick commit ${commit}: ${errorMessage}`);
 				}
 			}
 

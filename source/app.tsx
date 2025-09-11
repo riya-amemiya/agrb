@@ -6,6 +6,8 @@ import { GitOperations } from "./git.js";
 
 type Props = {
 	targetBranch?: string;
+	allowEmpty?: boolean;
+	skip?: boolean;
 };
 
 type Status = "loading" | "success" | "error" | "selecting";
@@ -18,7 +20,7 @@ interface RebaseState {
 	availableBranches?: string[];
 }
 
-export default function App({ targetBranch }: Props) {
+export default function App({ targetBranch, allowEmpty, skip }: Props) {
 	const [state, setState] = useState<RebaseState>({
 		status: "loading",
 		message: "Initializing...",
@@ -52,6 +54,7 @@ export default function App({ targetBranch }: Props) {
 							message,
 						}));
 					},
+					{ allowEmpty, skip },
 				);
 
 				setState({
@@ -72,7 +75,7 @@ export default function App({ targetBranch }: Props) {
 				});
 			}
 		},
-		[],
+		[allowEmpty, skip],
 	);
 
 	useEffect(() => {
