@@ -227,13 +227,9 @@ export class GitOperations {
 		try {
 			progressCallback?.("Starting linear rebase...");
 
-			const rebaseArgs = [
-				"rebase",
-				"--onto",
-				`origin/${targetBranch}`,
-				`origin/${targetBranch}`,
-				currentBranch,
-			];
+			await this.git.checkout(currentBranch);
+
+			const rebaseArgs = ["rebase", `origin/${targetBranch}`];
 
 			if (options?.continueOnConflict) {
 				rebaseArgs.push("-X", "ours");
@@ -245,16 +241,24 @@ export class GitOperations {
 			if (options?.continueOnConflict) {
 				try {
 					progressCallback?.(
-						"Conflicts detected, continuing with conflict resolution...",
+						"Conflicts detected, auto-resolving and continuing...",
 					);
+					
+					await this.git.add(".");
 					await this.git.raw(["rebase", "--continue"]);
-					progressCallback?.("Linear rebase completed with conflicts resolved");
+					progressCallback?.("Linear rebase completed with conflicts auto-resolved");
 				} catch {
+					try {
+						await this.git.raw(["rebase", "--abort"]);
+					} catch {}
 					throw new Error(
 						`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
 					);
 				}
 			} else {
+				try {
+					await this.git.raw(["rebase", "--abort"]);
+				} catch {}
 				throw new Error(
 					`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
 				);
