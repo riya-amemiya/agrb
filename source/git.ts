@@ -55,6 +55,15 @@ export class GitOperations {
 			.map((branch) => (branch as string).replace("origin/", ""));
 	}
 
+	async getLocalBranches(): Promise<string[]> {
+		const branches = await this.git.branch(["-l"]);
+		return branches.all
+			.filter(
+				(branch) => typeof branch === "string" && !branch.includes("HEAD"),
+			)
+			.map((branch) => (branch as string).replace("* ", ""));
+	}
+
 	async fetchAll(): Promise<void> {
 		await this.git.fetch(["--all"]);
 	}
@@ -132,7 +141,12 @@ export class GitOperations {
 		currentBranch: string,
 		targetBranch: string,
 		progressCallback?: (message: string) => void,
-		options?: { allowEmpty?: boolean; skip?: boolean },
+		options?: {
+			allowEmpty?: boolean;
+			skip?: boolean;
+			linear?: boolean;
+			continueOnConflict?: boolean;
+		},
 	): Promise<void> {
 		const tempBranchName = `temp-rebase-${process.pid}`;
 
@@ -143,6 +157,15 @@ export class GitOperations {
 			progressCallback?.("Checking if target branch exists...");
 			if (!(await this.branchExists(targetBranch))) {
 				throw new Error(`Target branch '${targetBranch}' does not exist`);
+			}
+
+			if (options?.linear) {
+				return await this.performLinearRebase(
+					currentBranch,
+					targetBranch,
+					progressCallback,
+					options,
+				);
 			}
 
 			progressCallback?.("Finding merge base and commits...");
@@ -192,6 +215,50 @@ export class GitOperations {
 			try {
 				await this.git.raw(["branch", "-D", tempBranchName]);
 			} catch {}
+		}
+	}
+
+	async performLinearRebase(
+		currentBranch: string,
+		targetBranch: string,
+		progressCallback?: (message: string) => void,
+		options?: { continueOnConflict?: boolean },
+	): Promise<void> {
+		try {
+			progressCallback?.("Starting linear rebase...");
+
+			const rebaseArgs = [
+				"rebase",
+				"--onto",
+				`origin/${targetBranch}`,
+				`origin/${targetBranch}`,
+				currentBranch,
+			];
+
+			if (options?.continueOnConflict) {
+				rebaseArgs.push("-X", "ours");
+			}
+
+			await this.git.raw(rebaseArgs);
+			progressCallback?.("Linear rebase completed successfully");
+		} catch (error) {
+			if (options?.continueOnConflict) {
+				try {
+					progressCallback?.(
+						"Conflicts detected, continuing with conflict resolution...",
+					);
+					await this.git.raw(["rebase", "--continue"]);
+					progressCallback?.("Linear rebase completed with conflicts resolved");
+				} catch {
+					throw new Error(
+						`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
+					);
+				}
+			} else {
+				throw new Error(
+					`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
+				);
+			}
 		}
 	}
 }
