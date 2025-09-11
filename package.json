@@ -1,18 +1,39 @@
 {
 	"name": "auto-rebase",
-	"version": "0.0.0",
+	"version": "0.1.0",
+	"description": "Interactive CLI to rebase a branch onto another safely (cherry-pick or linear rebase)",
 	"license": "MIT",
 	"bin": "dist/cli.js",
 	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/riya-amemiya/auto-rebase.git"
+	},
+	"homepage": "https://github.com/riya-amemiya/auto-rebase#readme",
+	"bugs": {
+		"url": "https://github.com/riya-amemiya/auto-rebase/issues"
+	},
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"test": "biome check .",
-		"lint": "biome check . --write"
+		"lint": "biome check . --write",
+		"prepublishOnly": "npm run build"
 	},
 	"files": [
 		"dist"
 	],
+	"keywords": [
+		"git",
+		"rebase",
+		"cherry-pick",
+		"cli",
+		"ink",
+		"github"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"dependencies": {
 		"@octokit/rest": "22.0.0",
 		"ink": "6.3.0",
