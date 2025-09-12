@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "auto-rebase",
+      "name": "arb",
       "dependencies": {
         "@octokit/rest": "22.0.0",
         "ink": "6.3.0",
