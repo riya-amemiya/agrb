@@ -1,6 +1,6 @@
-# Contributing to arb
+# Contributing to garb
 
-Thank you for your interest in contributing to arb! We welcome contributions from everyone.
+Thank you for your interest in contributing to garb! We welcome contributions from everyone.
 
 ## Code of Conduct
 
@@ -10,7 +10,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
 
 ### Reporting Bugs
 
-Before creating bug reports, please check [this list](https://github.com/riya-amemiya/arb/issues) as you might find out that you don't need to create one. When you are creating a bug report, please include as many details as possible:
+Before creating bug reports, please check [this list](https://github.com/riya-amemiya/garb/issues) as you might find out that you don't need to create one. When you are creating a bug report, please include as many details as possible:
 
 - Use a clear and descriptive title
 - Describe the exact steps which reproduce the problem
@@ -49,8 +49,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 1. Fork and clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/arb.git
-   cd arb
+   git clone https://github.com/your-username/garb.git
+   cd garb
    ```
 
 2. Install dependencies:

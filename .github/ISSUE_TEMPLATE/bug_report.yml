@@ -1,5 +1,5 @@
 name: 🐛 Bug Report
-description: Report a bug in arb
+description: Report a bug in garb
 title: "[Bug] "
 labels: ["bug"]
 body:
@@ -23,7 +23,7 @@ body:
       label: Steps to Reproduce
       description: Steps to reproduce the behavior.
       placeholder: |
-        1. Run command `arb --target main`
+        1. Run command `garb --target main`
         2. Select branch 'feature/test'
         3. Error occurs...
     validations:
@@ -50,8 +50,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: arb Version
-      description: What version of arb are you using?
+      label: garb Version
+      description: What version of garb are you using?
       placeholder: "0.1.0"
     validations:
       required: true
