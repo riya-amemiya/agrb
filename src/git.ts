@@ -1,6 +1,4 @@
 import { type SimpleGit, type SimpleGitOptions, simpleGit } from "simple-git";
-import { parseRepoFromRemote, type RepoInfo } from "./github.js";
-
 export interface GitConfig {
 	userName: string;
 	userEmail: string;
@@ -18,24 +16,6 @@ export class GitOperations {
 			trimmed: false,
 		};
 		this.git = simpleGit(options);
-	}
-
-	async setupGitConfig(config: GitConfig): Promise<void> {
-		await this.git.addConfig("user.name", config.userName);
-		await this.git.addConfig("user.email", config.userEmail);
-	}
-
-	async getCurrentRepoInfo(): Promise<RepoInfo> {
-		const remotes = await this.git.getRemotes(true);
-		const originRemote = remotes.find((remote) => remote.name === "origin");
-
-		if (!originRemote) {
-			throw new Error("No origin remote found");
-		}
-
-		return parseRepoFromRemote(
-			originRemote.refs.fetch || originRemote.refs.push || "",
-		);
 	}
 
 	async getCurrentBranch(): Promise<string> {
@@ -66,14 +46,6 @@ export class GitOperations {
 
 	async fetchAll(): Promise<void> {
 		await this.git.fetch(["--all"]);
-	}
-
-	async checkoutBranch(branch: string, fromRemote = false): Promise<void> {
-		if (fromRemote) {
-			await this.git.checkout(["-B", branch, `origin/${branch}`]);
-		} else {
-			await this.git.checkout(branch);
-		}
 	}
 
 	async createTemporaryBranch(name: string, fromBranch: string): Promise<void> {
@@ -115,12 +87,6 @@ export class GitOperations {
 		try {
 			await this.git.raw(["cherry-pick", "--abort"]);
 		} catch {}
-	}
-
-	async forcePush(localBranch: string, remoteBranch: string): Promise<void> {
-		await this.git.push("origin", `${localBranch}:${remoteBranch}`, [
-			"--force",
-		]);
 	}
 
 	async branchExists(branch: string): Promise<boolean> {
