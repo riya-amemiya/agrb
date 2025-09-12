@@ -1,4 +1,4 @@
-# arb （auto-rebase）
+# agrb （auto-rebase）
 
 <a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
 
@@ -7,13 +7,13 @@
 ## インストール
 
 ```bash
-npm install --global arb
+npm install --global agrb
 ```
 
 ## 使い方
 
 ```bash
-arb [options]
+agrb [options]
 ```
 
 オプション一覧:
@@ -29,20 +29,20 @@ arb [options]
 
 ```bash
 # mainへ載せ替え（cherry-pickベース）
-arb --target main
+agrb --target main
 
 # developへ線形rebaseで載せ替え
-arb --target develop --linear
+agrb --target develop --linear
 
 # コンフリクトがあっても ours 戦略で継続
-arb --linear --continue-on-conflict
+agrb --linear --continue-on-conflict
 
 # 対象ブランチをリモートブランチから選ぶ
-arb --remote-target
+agrb --remote-target
 
 # 空コミットを許可/スキップ
-arb --allow-empty
-arb --skip
+agrb --allow-empty
+agrb --skip
 ```
 
 ## 動作の概要

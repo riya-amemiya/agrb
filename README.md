@@ -1,4 +1,4 @@
-# arb (auto-rebase)
+# agrb (auto-rebase)
 
 <a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
 
@@ -14,13 +14,13 @@ Read this in Japanese: see `README.ja.md`.
 ## Install
 
 ```bash
-npm install --global arb
+npm install --global agrb
 ```
 
 ## Usage
 
 ```bash
-arb [options]
+agrb [options]
 ```
 
 Options:
@@ -36,20 +36,20 @@ Options:
 
 ```bash
 # Rebase onto main (cherry-pick based)
-arb --target main
+agrb --target main
 
 # Rebase onto develop with linear history
-arb --target develop --linear
+agrb --target develop --linear
 
 # Continue on conflicts using ours strategy
-arb --linear --continue-on-conflict
+agrb --linear --continue-on-conflict
 
 # Select target from remote branches
-arb --remote-target
+agrb --remote-target
 
 # Allow/skip empty commits
-arb --allow-empty
-arb --skip
+agrb --allow-empty
+agrb --skip
 ```
 
 ## How it works
