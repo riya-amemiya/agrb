@@ -1,5 +1,7 @@
 # agrb (auto git rebase)
 
+- [日本語](./README.ja.md)
+
 <a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
 
 Interactive CLI to safely rebase a branch onto another. Supports two strategies:
@@ -27,7 +29,6 @@ Options:
 
 - `--target, -t <branch>`: Target branch. If omitted, select interactively
 - `--allow-empty`: Allow empty commits during cherry-pick
-- `--skip`: Skip empty/conflicting commits during cherry-pick
 - `--linear`: Use `git rebase` for a linear history (default is cherry-pick)
 - `--continue-on-conflict`: Continue linear rebase when conflicts occur (`-X ours` + `--continue`)
 - `--remote-target`: Select target branch from remote tracking branches (`origin/*`)
@@ -47,14 +48,13 @@ agrb --linear --continue-on-conflict
 # Select target from remote branches
 agrb --remote-target
 
-# Allow/skip empty commits
+# Allow empty commits
 agrb --allow-empty
-agrb --skip
 ```
 
 ## How it works
 
-In the default cherry-pick mode, non-merge commits between `merge-base(<target>, <current>)` and the current branch are applied onto a temporary branch created from `<target>`. On success, the current branch is hard-reset to the temp branch.
+In the default cherry-pick mode, non-merge commits between `merge-base(<target>, <current>)` and the current branch are applied onto a temporary branch created from `<target>`. Empty commits or conflicts are automatically skipped. You can intentionally include empty commits with `--allow-empty`. On success, the current branch is hard-reset to the temp branch.
 
 In linear mode (`--linear`), `git rebase origin/<target>` is executed. With `--continue-on-conflict`, the command tries `-X ours`, stages changes, and runs `git rebase --continue`.
 

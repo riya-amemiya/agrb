@@ -1,6 +1,6 @@
 {
 	"name": "agrb",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Interactive CLI to rebase a branch onto another safely (cherry-pick or linear rebase)",
 	"license": "MIT",
 	"bin": "dist/cli.js",

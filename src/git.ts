@@ -109,7 +109,6 @@ export class GitOperations {
 		progressCallback?: (message: string) => void,
 		options?: {
 			allowEmpty?: boolean;
-			skip?: boolean;
 			linear?: boolean;
 			continueOnConflict?: boolean;
 		},
@@ -159,9 +158,8 @@ export class GitOperations {
 					const errorMessage =
 						error instanceof Error ? error.message : String(error);
 					if (
-						options?.skip &&
-						(errorMessage.includes("empty") ||
-							errorMessage.includes("CONFLICT"))
+						errorMessage.includes("empty") ||
+						errorMessage.includes("CONFLICT")
 					) {
 						try {
 							await this.git.raw(["cherry-pick", "--skip"]);
