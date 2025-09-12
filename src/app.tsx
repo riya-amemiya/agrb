@@ -165,7 +165,7 @@ export default function App({
 		} else if (input && !key.ctrl && !key.meta) {
 			setSearchTerm((prev) => prev + input);
 		}
-	});
+	}, { isActive: state.status === "selecting" });
 
 	const filteredBranches =
 		state.availableBranches?.filter((branch) => {
