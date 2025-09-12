@@ -1,4 +1,4 @@
-# auto-rebase
+# arb(auto-rebase)
 
 <a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
 
@@ -14,13 +14,13 @@ Read this in Japanese: see `README.ja.md`.
 ## Install
 
 ```bash
-npm install --global auto-rebase
+npm install --global arb
 ```
 
 ## Usage
 
 ```bash
-auto-rebase [options]
+arb [options]
 ```
 
 Options:
@@ -36,20 +36,20 @@ Options:
 
 ```bash
 # Rebase onto main (cherry-pick based)
-auto-rebase --target main
+arb --target main
 
 # Rebase onto develop with linear history
-auto-rebase --target develop --linear
+arb --target develop --linear
 
 # Continue on conflicts using ours strategy
-auto-rebase --linear --continue-on-conflict
+arb --linear --continue-on-conflict
 
 # Select target from remote branches
-auto-rebase --remote-target
+arb --remote-target
 
 # Allow/skip empty commits
-auto-rebase --allow-empty
-auto-rebase --skip
+arb --allow-empty
+arb --skip
 ```
 
 ## How it works

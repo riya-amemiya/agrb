@@ -1,5 +1,5 @@
 {
-	"name": "auto-rebase",
+	"name": "arb",
 	"version": "0.1.0",
 	"description": "Interactive CLI to rebase a branch onto another safely (cherry-pick or linear rebase)",
 	"license": "MIT",
@@ -7,11 +7,11 @@
 	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/riya-amemiya/auto-rebase.git"
+		"url": "git+https://github.com/riya-amemiya/arb.git"
 	},
-	"homepage": "https://github.com/riya-amemiya/auto-rebase#readme",
+	"homepage": "https://github.com/riya-amemiya/arb#readme",
 	"bugs": {
-		"url": "https://github.com/riya-amemiya/auto-rebase/issues"
+		"url": "https://github.com/riya-amemiya/arb/issues"
 	},
 	"scripts": {
 		"build": "tsc",

@@ -1,4 +1,4 @@
-# Auto Rebase CLI機能設計
+# arb CLI機能設計
 
 ## 概要
 
@@ -7,7 +7,7 @@ GitHub ActionsのAuto Rebase PR機能をCLIツールとして実装。PRのリ�
 ## コマンド仕様
 
 ```bash
-auto-rebase <pr-number> [options]
+arb <pr-number> [options]
 ```
 
 ### オプション

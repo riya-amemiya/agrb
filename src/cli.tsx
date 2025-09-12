@@ -6,7 +6,7 @@ import App from "./app.js";
 const cli = meow(
 	`
 	Usage
-	  $ auto-rebase [options]
+	  $ arb [options]
 
 	Options
 		--target <branch>    Target branch to rebase onto (optional, interactive selection if omitted)
@@ -17,12 +17,12 @@ const cli = meow(
 		--remote-target      Use remote branches for target selection
 
 	Examples
-	  $ auto-rebase --target main
-	  $ auto-rebase --target develop --linear
-	  $ auto-rebase --linear --continue-on-conflict
-	  $ auto-rebase --remote-target
-	  $ auto-rebase --allow-empty
-	  $ auto-rebase --skip
+	  $ arb --target main
+	  $ arb --target develop --linear
+	  $ arb --linear --continue-on-conflict
+	  $ arb --remote-target
+	  $ arb --allow-empty
+	  $ arb --skip
 `,
 	{
 		importMeta: import.meta,

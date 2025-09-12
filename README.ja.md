@@ -1,4 +1,4 @@
-# auto-rebase
+# arb
 
 <a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
 
@@ -7,13 +7,13 @@
 ## インストール
 
 ```bash
-npm install --global auto-rebase
+npm install --global arb
 ```
 
 ## 使い方
 
 ```bash
-auto-rebase [options]
+arb [options]
 ```
 
 オプション一覧:
@@ -29,20 +29,20 @@ auto-rebase [options]
 
 ```bash
 # mainへ載せ替え（cherry-pickベース）
-auto-rebase --target main
+arb --target main
 
 # developへ線形rebaseで載せ替え
-auto-rebase --target develop --linear
+arb --target develop --linear
 
 # コンフリクトがあっても ours 戦略で継続
-auto-rebase --linear --continue-on-conflict
+arb --linear --continue-on-conflict
 
 # 対象ブランチをリモートブランチから選ぶ
-auto-rebase --remote-target
+arb --remote-target
 
 # 空コミットを許可/スキップ
-auto-rebase --allow-empty
-auto-rebase --skip
+arb --allow-empty
+arb --skip
 ```
 
 ## 動作の概要

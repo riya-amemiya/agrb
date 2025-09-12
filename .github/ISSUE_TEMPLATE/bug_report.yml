@@ -1,5 +1,5 @@
 name: 🐛 Bug Report
-description: Report a bug in auto-rebase
+description: Report a bug in arb
 title: "[Bug] "
 labels: ["bug"]
 body:
@@ -23,7 +23,7 @@ body:
       label: Steps to Reproduce
       description: Steps to reproduce the behavior.
       placeholder: |
-        1. Run command `auto-rebase --target main`
+        1. Run command `arb --target main`
         2. Select branch 'feature/test'
         3. Error occurs...
     validations:
@@ -50,8 +50,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: auto-rebase Version
-      description: What version of auto-rebase are you using?
+      label: arb Version
+      description: What version of arb are you using?
       placeholder: "0.1.0"
     validations:
       required: true
