@@ -33,8 +33,7 @@
 		"github"
 	],
 	"publishConfig": {
-		"access": "public",
-		"registry": "https://npm.pkg.github.com"
+		"access": "public"
 	},
 	"dependencies": {
 		"@octokit/rest": "22.0.0",
