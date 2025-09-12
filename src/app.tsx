@@ -149,23 +149,26 @@ export default function App({
 		}
 	};
 
-	useInput((input, key) => {
-		if (state.status !== "selecting") {
-			return;
-		}
+	useInput(
+		(input, key) => {
+			if (state.status !== "selecting") {
+				return;
+			}
 
-		if (key.return || key.upArrow || key.downArrow) {
-			return;
-		}
+			if (key.return || key.upArrow || key.downArrow) {
+				return;
+			}
 
-		if (key.backspace || key.delete) {
-			setSearchTerm((prev) => prev.slice(0, -1));
-		} else if (key.escape) {
-			setSearchTerm("");
-		} else if (input && !key.ctrl && !key.meta) {
-			setSearchTerm((prev) => prev + input);
-		}
-	}, { isActive: state.status === "selecting" });
+			if (key.backspace || key.delete) {
+				setSearchTerm((prev) => prev.slice(0, -1));
+			} else if (key.escape) {
+				setSearchTerm("");
+			} else if (input && !key.ctrl && !key.meta) {
+				setSearchTerm((prev) => prev + input);
+			}
+		},
+		{ isActive: state.status === "selecting" },
+	);
 
 	const filteredBranches =
 		state.availableBranches?.filter((branch) => {
