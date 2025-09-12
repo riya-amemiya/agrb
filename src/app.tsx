@@ -1,4 +1,4 @@
-import { Box, Text } from "ink";
+import { Box, Text, useInput } from "ink";
 import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
 import { useCallback, useEffect, useState } from "react";
@@ -34,6 +34,7 @@ export default function App({
 		message: "Initializing...",
 		targetBranch,
 	});
+	const [searchTerm, setSearchTerm] = useState("");
 
 	const performRebaseWithBranch = useCallback(
 		async (currentBranch: string, target: string) => {
@@ -118,7 +119,7 @@ export default function App({
 
 					setState({
 						status: "selecting",
-						message: "Select target branch:",
+						message: "Select target branch (type to filter):",
 						currentBranch,
 						availableBranches: filteredBranches,
 					});
@@ -148,6 +149,39 @@ export default function App({
 		}
 	};
 
+	useInput((input, key) => {
+		if (state.status !== "selecting") {
+			return;
+		}
+
+		if (key.return || key.upArrow || key.downArrow) {
+			return;
+		}
+
+		if (key.backspace || key.delete) {
+			setSearchTerm((prev) => prev.slice(0, -1));
+		} else if (key.escape) {
+			setSearchTerm("");
+		} else if (input && !key.ctrl && !key.meta) {
+			setSearchTerm((prev) => prev + input);
+		}
+	});
+
+	const filteredBranches =
+		state.availableBranches?.filter((branch) => {
+			const branchLower = branch.toLowerCase();
+			const searchTerms = searchTerm
+				.toLowerCase()
+				.split(/\s+/)
+				.filter((term) => term.length > 0);
+
+			if (searchTerms.length === 0) {
+				return true;
+			}
+
+			return searchTerms.every((term) => branchLower.includes(term));
+		}) || [];
+
 	return (
 		<Box flexDirection="column" padding={1}>
 			<Box marginBottom={1}>
@@ -176,8 +210,13 @@ export default function App({
 				{state.status === "selecting" && state.availableBranches && (
 					<>
 						<Text>{state.message}</Text>
+						{searchTerm && (
+							<Box marginBottom={1}>
+								<Text color="gray">Filter: {searchTerm}</Text>
+							</Box>
+						)}
 						<SelectInput
-							items={state.availableBranches.map((branch) => ({
+							items={filteredBranches.map((branch) => ({
 								label: branch,
 								value: branch,
 							}))}
