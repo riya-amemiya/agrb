@@ -1,0 +1,72 @@
+# Source code (only publish built files)
+src/
+*.ts
+!dist/**/*.d.ts
+
+# Configuration files
+tsconfig.json
+biome.json
+.eslintrc*
+.prettierrc*
+
+# Development dependencies
+package-lock.json
+yarn.lock
+bun.lockb
+
+# Build tools and config
+.github/
+.vscode/
+.idea/
+
+# Tests
+__tests__/
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Coverage
+coverage/
+.nyc_output
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+.tmp/
+.cache/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# Environment files
+.env*
+
+# Git files
+.gitignore
+.gitattributes
+
+# Documentation build
+docs/
+
+# Examples and demos (if any)
+examples/
+demo/
+
+# Scripts not needed in production
+scripts/
