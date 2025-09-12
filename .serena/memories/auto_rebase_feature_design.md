@@ -1,4 +1,4 @@
-# garb CLI機能設計
+# agrb CLI機能設計
 
 ## 概要
 
@@ -7,7 +7,7 @@ GitHub ActionsのAuto Rebase PR機能をCLIツールとして実装。PRのリ�
 ## コマンド仕様
 
 ```bash
-garb <pr-number> [options]
+agrb <pr-number> [options]
 ```
 
 ### オプション

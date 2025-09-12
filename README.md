@@ -1,4 +1,4 @@
-# garb (auto-rebase)
+# agrb (auto-rebase)
 
 <a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
 
@@ -14,13 +14,13 @@ Read this in Japanese: see `README.ja.md`.
 ## Install
 
 ```bash
-npm install --global garb
+npm install --global agrb
 ```
 
 ## Usage
 
 ```bash
-garb [options]
+agrb [options]
 ```
 
 Options:
@@ -36,20 +36,20 @@ Options:
 
 ```bash
 # Rebase onto main (cherry-pick based)
-garb --target main
+agrb --target main
 
 # Rebase onto develop with linear history
-garb --target develop --linear
+agrb --target develop --linear
 
 # Continue on conflicts using ours strategy
-garb --linear --continue-on-conflict
+agrb --linear --continue-on-conflict
 
 # Select target from remote branches
-garb --remote-target
+agrb --remote-target
 
 # Allow/skip empty commits
-garb --allow-empty
-garb --skip
+agrb --allow-empty
+agrb --skip
 ```
 
 ## How it works

@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We currently support the following versions of garb with security updates:
+We currently support the following versions of agrb with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -10,10 +10,10 @@ We currently support the following versions of garb with security updates:
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within garb, please report it responsibly:
+If you discover a security vulnerability within agrb, please report it responsibly:
 
 1. **Do not** open a public issue for security vulnerabilities
-2. Send an email to: <oss-contact+garb@tokidux.com>
+2. Send an email to: <oss-contact+agrb@tokidux.com>
 3. Provide a detailed description of the vulnerability
 4. Include steps to reproduce the issue if possible
 5. Allow time for the maintainer to respond and fix the issue
@@ -26,7 +26,7 @@ If you discover a security vulnerability within garb, please report it responsib
 
 ## Security Considerations
 
-When using garb, please be aware that:
+When using agrb, please be aware that:
 
 - This tool performs Git operations that modify your repository
 - Always review the changes before confirming any operations
@@ -35,7 +35,7 @@ When using garb, please be aware that:
 
 ## Best Practices
 
-- Keep garb updated to the latest version
+- Keep agrb updated to the latest version
 - Review the changelog for any security-related updates
 - Use the tool only in repositories you trust
 - Verify the integrity of branches before and after rebase operations

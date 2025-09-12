@@ -1,4 +1,4 @@
-# garb （auto-rebase）
+# agrb （auto-rebase）
 
 <a href="https://github.com/sponsors/riya-amemiya"><img alt="Sponsor" src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" /></a>
 
@@ -7,13 +7,13 @@
 ## インストール
 
 ```bash
-npm install --global garb
+npm install --global agrb
 ```
 
 ## 使い方
 
 ```bash
-garb [options]
+agrb [options]
 ```
 
 オプション一覧:
@@ -29,20 +29,20 @@ garb [options]
 
 ```bash
 # mainへ載せ替え（cherry-pickベース）
-garb --target main
+agrb --target main
 
 # developへ線形rebaseで載せ替え
-garb --target develop --linear
+agrb --target develop --linear
 
 # コンフリクトがあっても ours 戦略で継続
-garb --linear --continue-on-conflict
+agrb --linear --continue-on-conflict
 
 # 対象ブランチをリモートブランチから選ぶ
-garb --remote-target
+agrb --remote-target
 
 # 空コミットを許可/スキップ
-garb --allow-empty
-garb --skip
+agrb --allow-empty
+agrb --skip
 ```
 
 ## 動作の概要

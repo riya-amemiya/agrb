@@ -1,5 +1,5 @@
 {
-	"name": "garb",
+	"name": "agrb",
 	"version": "0.1.0",
 	"description": "Interactive CLI to rebase a branch onto another safely (cherry-pick or linear rebase)",
 	"license": "MIT",
@@ -7,11 +7,11 @@
 	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/riya-amemiya/garb.git"
+		"url": "git+https://github.com/riya-amemiya/agrb.git"
 	},
-	"homepage": "https://github.com/riya-amemiya/garb#readme",
+	"homepage": "https://github.com/riya-amemiya/agrb#readme",
 	"bugs": {
-		"url": "https://github.com/riya-amemiya/garb/issues"
+		"url": "https://github.com/riya-amemiya/agrb/issues"
 	},
 	"scripts": {
 		"build": "tsc",
