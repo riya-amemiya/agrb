@@ -20,7 +20,6 @@ agrb [options]
 
 - `--target, -t <branch>`: 対象ブランチ。未指定の場合はインタラクティブに選択します
 - `--allow-empty`: cherry-pick時に空コミットを許可します
-- `--skip`: cherry-pick時に空コミットやコンフリクト発生コミットをスキップします
 - `--linear`: `git rebase` による線形履歴モードを使用します（デフォルトはcherry-pickベース）
 - `--continue-on-conflict`: 線形rebase時にコンフリクトが出ても継続（`-X ours`を使用し、自動解決して`--continue`を試行）
 - `--remote-target`: 対象ブランチの選択にリモート追跡ブランチ（`origin/*`）を使用します
@@ -40,14 +39,13 @@ agrb --linear --continue-on-conflict
 # 対象ブランチをリモートブランチから選ぶ
 agrb --remote-target
 
-# 空コミットを許可/スキップ
+# 空コミットを許可
 agrb --allow-empty
-agrb --skip
 ```
 
 ## 動作の概要
 
-デフォルト（cherry-pick）モードでは、ターゲットブランチと現在のブランチの`merge-base`から現在ブランチまでの非マージコミットを順に適用します。空コミットやコンフリクトに対する振る舞いは`--allow-empty`/`--skip`で制御できます。完了後は一時ブランチの内容を現在ブランチへ`reset --hard`で反映します。
+デフォルト（cherry-pick）モードでは、ターゲットブランチと現在のブランチの`merge-base`から現在ブランチまでの非マージコミットを順に適用します。空コミットやコンフリクトは自動でスキップされます。`--allow-empty`で空コミットを意図的に含めることも可能です。完了後は一時ブランチの内容を現在ブランチへ`reset --hard`で反映します。
 
 線形（`--linear`）モードでは、`git rebase origin/<target>`を実行します。`--continue-on-conflict`指定時はコンフリクト検出後に自動解決（`-X ours`）を試み、`git add . && git rebase --continue`を行います。
 

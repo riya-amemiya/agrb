@@ -11,7 +11,6 @@ const cli = meow(
 	Options
 		--target <branch>    Target branch to rebase onto (optional, interactive selection if omitted)
 		--allow-empty        Allow empty commits during cherry-pick
-		--skip               Skip empty commits during cherry-pick
 		--linear             Use git rebase for linear history (default: cherry-pick)
 		--continue-on-conflict   Continue rebase even on conflicts (forces conflict resolution)
 		--remote-target      Use remote branches for target selection
@@ -22,7 +21,6 @@ const cli = meow(
 	  $ agrb --linear --continue-on-conflict
 	  $ agrb --remote-target
 	  $ agrb --allow-empty
-	  $ agrb --skip
 `,
 	{
 		importMeta: import.meta,
@@ -32,9 +30,6 @@ const cli = meow(
 				shortFlag: "t",
 			},
 			allowEmpty: {
-				type: "boolean",
-			},
-			skip: {
 				type: "boolean",
 			},
 			linear: {
@@ -54,7 +49,6 @@ render(
 	<App
 		targetBranch={cli.flags.target}
 		allowEmpty={cli.flags.allowEmpty}
-		skip={cli.flags.skip}
 		linear={cli.flags.linear}
 		continueOnConflict={cli.flags.continueOnConflict}
 		remoteTarget={cli.flags.remoteTarget}

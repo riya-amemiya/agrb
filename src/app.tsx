@@ -7,7 +7,6 @@ import { GitOperations } from "./git.js";
 type Props = {
 	targetBranch?: string;
 	allowEmpty?: boolean;
-	skip?: boolean;
 	linear?: boolean;
 	continueOnConflict?: boolean;
 	remoteTarget?: boolean;
@@ -26,7 +25,6 @@ interface RebaseState {
 export default function App({
 	targetBranch,
 	allowEmpty,
-	skip,
 	linear,
 	continueOnConflict,
 	remoteTarget,
@@ -64,7 +62,7 @@ export default function App({
 							message,
 						}));
 					},
-					{ allowEmpty, skip, linear, continueOnConflict },
+					{ allowEmpty, linear, continueOnConflict },
 				);
 
 				setState({
@@ -85,7 +83,7 @@ export default function App({
 				});
 			}
 		},
-		[allowEmpty, skip, linear, continueOnConflict],
+		[allowEmpty, linear, continueOnConflict],
 	);
 
 	useEffect(() => {
