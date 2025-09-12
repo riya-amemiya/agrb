@@ -1,4 +1,4 @@
-# GEMINI.md
+# AGENTS.md
 
 ## Project Overview
 
