@@ -3,6 +3,7 @@ import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
 import { useCallback, useEffect, useState } from "react";
 import { GitOperations } from "./git.js";
+import { sanitizeString } from "./lib/sanitizeString.js";
 
 type Props = {
 	targetBranch?: string;
@@ -185,6 +186,8 @@ export default function App({
 			return searchTerms.every((term) => branchLower.includes(term));
 		}) || [];
 
+	const sanitizedMessage = sanitizeString(state.message);
+
 	return (
 		<Box flexDirection="column" padding={1}>
 			<Box marginBottom={1}>
@@ -207,12 +210,12 @@ export default function App({
 						<Text color="yellow">
 							<Spinner type="dots" />
 						</Text>{" "}
-						{state.message}
+						{sanitizedMessage}
 					</Text>
 				)}
 				{state.status === "selecting" && state.availableBranches && (
 					<>
-						<Text>{state.message}</Text>
+						<Text>{sanitizedMessage}</Text>
 						{searchTerm && (
 							<Box marginBottom={1}>
 								<Text color="gray">Filter: {searchTerm}</Text>
@@ -228,10 +231,10 @@ export default function App({
 					</>
 				)}
 				{state.status === "success" && (
-					<Text color="green">✅ {state.message}</Text>
+					<Text color="green">✅ {sanitizedMessage}</Text>
 				)}
 				{state.status === "error" && (
-					<Text color="red">❌ {state.message}</Text>
+					<Text color="red">❌ {sanitizedMessage}</Text>
 				)}
 			</Box>
 		</Box>
