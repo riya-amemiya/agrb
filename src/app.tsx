@@ -186,7 +186,7 @@ export default function App({
 			return searchTerms.every((term) => branchLower.includes(term));
 		}) || [];
 
-const sanitizedMessage = sanitizeString(state.message);
+	const sanitizedMessage = sanitizeString(state.message);
 
 	return (
 		<Box flexDirection="column" padding={1}>
