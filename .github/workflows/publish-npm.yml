@@ -3,6 +3,7 @@ name: Publish to npm
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -26,7 +27,7 @@ jobs:
       - name: Setup Node.js for npm publish
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 #v5.0.0
         with:
-          node-version: 20
+          node-version: 24
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies with frozen lockfile
@@ -34,6 +35,9 @@ jobs:
 
       - name: Build project
         run: bun run build
+
+      - name: Update npm to the latest version
+        run: npm install -g npm@latest
 
       - name: Publish to npm
         run: npm publish --provenance
