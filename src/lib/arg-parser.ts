@@ -53,6 +53,8 @@ export class ArgParser<T extends FlagsSchema> {
 				const flagConfig = this.schema[longFlag];
 				if (flagConfig?.type === "boolean") {
 					flags[longFlag] = false as Flags<T>[keyof T];
+				} else {
+					flags[longFlag] = undefined as Flags<T>[keyof T];
 				}
 			}
 		}
@@ -65,17 +67,43 @@ export class ArgParser<T extends FlagsSchema> {
 			return { flags: flags as Flags<T>, input, version: this.version };
 		}
 
+		let parsingFlags = true;
 		while (remainingArgs.length > 0) {
 			const arg = remainingArgs.shift() as string;
-			const longFlagArg = this.aliases[arg] ?? arg;
-			const longFlag = this.longFlagMap[longFlagArg];
 
-			if (longFlag) {
-				const flagConfig = this.schema[longFlag];
-				if (flagConfig?.type === "boolean") {
-					flags[longFlag] = true as Flags<T>[keyof T];
-				} else if (flagConfig?.type === "string") {
-					flags[longFlag] = remainingArgs.shift() as Flags<T>[keyof T];
+			if (arg === "--") {
+				parsingFlags = false;
+				input.push(...remainingArgs);
+				break;
+			}
+
+			if (parsingFlags) {
+				let argName = arg;
+				let argValue: string | undefined;
+				if (arg.includes("=")) {
+					const parts = arg.split("=");
+					if (parts[0] !== undefined) {
+						argName = parts[0];
+					}
+					argValue = parts[1];
+				}
+
+				const longFlagArg = this.aliases[argName] ?? argName;
+				const longFlag = this.longFlagMap[longFlagArg];
+
+				if (longFlag) {
+					const flagConfig = this.schema[longFlag];
+					if (flagConfig?.type === "boolean") {
+						flags[longFlag] = true as Flags<T>[keyof T];
+					} else if (flagConfig?.type === "string") {
+						const value = argValue ?? remainingArgs.shift();
+						if (value === undefined) {
+							throw new Error(`Flag --${String(longFlag)} requires a value.`);
+						}
+						flags[longFlag] = value as Flags<T>[keyof T];
+					}
+				} else {
+					input.push(arg);
 				}
 			} else {
 				input.push(arg);
