@@ -84,29 +84,3 @@ MIT
 ## Contributing
 
 Issues and PRs are welcome. See CONTRIBUTING for details.
-the tool to continue.
-
-## Development
-
-```bash
-# Install dependencies
-bun install
-
-# Build
-bun run build
-
-# Dev (watch)
-bun run dev
-
-# Lint (check/fix)
-bun run test
-bun run lint
-```
-
-## License
-
-MIT
-
-## Contributing
-
-Issues and PRs are welcome. See CONTRIBUTING for details.
