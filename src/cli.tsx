@@ -19,7 +19,14 @@ Options
     -t, --target <branch>    Target branch to rebase onto (optional, interactive selection if omitted)
     --allow-empty            Allow empty commits during cherry-pick
     --linear                 Use git rebase for linear history (default: cherry-pick)
-    --continue-on-conflict   Continue rebase even on conflicts (forces conflict resolution)
+    --continue-on-conflict   In linear mode, continue rebase on conflicts using 'ours' strategy.
+    --on-conflict <strategy> In cherry-pick mode, specify conflict resolution strategy.
+                             Strategies:
+                               - skip (default): automatically skip the conflicting commit.
+                               - ours: automatically resolve conflict using 'ours' strategy.
+                               - theirs: automatically resolve conflict using 'theirs' strategy.
+                               - pause: pause on conflict, allowing manual resolution.
+                                 After resolving, press Enter to continue.
     --remote-target          Use remote branches for target selection
     -v, --version            Show version
     -h, --help               Show help
@@ -28,8 +35,8 @@ Examples
   $ agrb --target main
   $ agrb --target develop --linear
   $ agrb --linear --continue-on-conflict
-  $ agrb --remote-target
-  $ agrb --allow-empty
+  $ agrb --on-conflict pause
+  $ agrb --on-conflict ours
 `;
 
 const schema = {
@@ -45,6 +52,9 @@ const schema = {
 	},
 	continueOnConflict: {
 		type: "boolean",
+	},
+	onConflict: {
+		type: "string",
 	},
 	remoteTarget: {
 		type: "boolean",
@@ -76,5 +86,6 @@ render(
 		linear={cli.flags.linear}
 		continueOnConflict={cli.flags.continueOnConflict}
 		remoteTarget={cli.flags.remoteTarget}
+		onConflict={cli.flags.onConflict}
 	/>,
 );

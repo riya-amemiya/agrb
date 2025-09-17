@@ -21,8 +21,15 @@ agrb [options]
 - `--target, -t <branch>`: 対象ブランチ。未指定の場合はインタラクティブに選択します
 - `--allow-empty`: cherry-pick時に空コミットを許可します
 - `--linear`: `git rebase` による線形履歴モードを使用します（デフォルトはcherry-pickベース）
-- `--continue-on-conflict`: 線形rebase時にコンフリクトが出ても継続（`-X ours`を使用し、自動解決して`--continue`を試行）
+- `--continue-on-conflict`: `linear`モードにおいて、コンフリクト発生時に`ours`戦略を用いて自動解決し、リベースを継続します
 - `--remote-target`: 対象ブランチの選択にリモート追跡ブランチ（`origin/*`）を使用します
+- `--on-conflict <strategy>`: `cherry-pick`モードにおけるコンフリクト解決戦略を指定します。
+                             戦略:
+                               - `skip` (デフォルト): コンフリクトしたコミットを自動的にスキップします。
+                               - `ours`: `ours`戦略を用いてコンフリクトを自動解決します。
+                               - `theirs`: `theirs`戦略を用いてコンフリクトを自動解決します。
+                               - `pause`: コンフリクト発生時に一時停止し、手動での解決を促します。
+                                          解決後にEnterキーを押すとリベースを再開します。
 
 ### 例
 
