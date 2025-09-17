@@ -30,8 +30,10 @@ Options:
 - `--target, -t <branch>`: Target branch. If omitted, select interactively
 - `--allow-empty`: Allow empty commits during cherry-pick
 - `--linear`: Use `git rebase` for a linear history (default is cherry-pick)
-- `--continue-on-conflict`: Continue linear rebase when conflicts occur (`-X ours` + `--continue`)
+- `--continue-on-conflict`: In linear mode, continue rebase on conflicts using `ours` strategy
 - `--remote-target`: Select target branch from remote tracking branches (`origin/*`)
+- `--on-conflict <strategy>`: In cherry-pick mode, specify conflict resolution strategy.
+                             Strategies: skip (default), ours, theirs, pause.
 
 ### Examples
 

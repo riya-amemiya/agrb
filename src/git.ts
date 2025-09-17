@@ -1,8 +1,5 @@
 import { type SimpleGit, type SimpleGitOptions, simpleGit } from "simple-git";
-export interface GitConfig {
-	userName: string;
-	userEmail: string;
-}
+import { isValidBranchName } from "./lib/isValidBranchName.js";
 
 export class GitOperations {
 	private git: SimpleGit;
@@ -21,6 +18,11 @@ export class GitOperations {
 	async getCurrentBranch(): Promise<string> {
 		const status = await this.git.status();
 		return status.current || "HEAD";
+	}
+
+	async isWorkdirClean(): Promise<boolean> {
+		const status = await this.git.status();
+		return status.isClean();
 	}
 
 	async getAllBranches(): Promise<string[]> {
@@ -48,48 +50,10 @@ export class GitOperations {
 		await this.git.fetch(["--all"]);
 	}
 
-	async createTemporaryBranch(name: string, fromBranch: string): Promise<void> {
-		await this.git.checkout(["-b", name, `origin/${fromBranch}`]);
-	}
-
-	async getMergeBase(branch1: string, branch2: string): Promise<string> {
-		const result = await this.git.raw([
-			"merge-base",
-			`origin/${branch1}`,
-			branch2,
-		]);
-		return result.trim();
-	}
-
-	async getCommitsBetween(from: string, to: string): Promise<string[]> {
-		const result = await this.git.raw([
-			"rev-list",
-			"--reverse",
-			`${from}..${to}`,
-		]);
-		return result.trim().split("\n").filter(Boolean);
-	}
-
-	async isCommitMerge(commitSha: string): Promise<boolean> {
-		try {
-			await this.git.raw(["rev-parse", "--verify", `${commitSha}^2`]);
-			return true;
-		} catch {
-			return false;
-		}
-	}
-
-	async cherryPick(commitSha: string): Promise<void> {
-		await this.git.raw(["cherry-pick", commitSha]);
-	}
-
-	async abortCherryPick(): Promise<void> {
-		try {
-			await this.git.raw(["cherry-pick", "--abort"]);
-		} catch {}
-	}
-
 	async branchExists(branch: string): Promise<boolean> {
+		if (!isValidBranchName(branch)) {
+			throw new Error(`Invalid branch name: ${branch}`);
+		}
 		try {
 			await this.git.raw([
 				"show-ref",
@@ -99,22 +63,129 @@ export class GitOperations {
 			]);
 			return true;
 		} catch {
-			return false;
+			try {
+				await this.git.raw([
+					"show-ref",
+					"--verify",
+					"--quiet",
+					`refs/heads/${branch}`,
+				]);
+				return true;
+			} catch {
+				return false;
+			}
 		}
 	}
 
-	async performLocalRebase(
+	private async resolveBranchRef(branch: string): Promise<string> {
+		try {
+			await this.git.raw([
+				"show-ref",
+				"--verify",
+				"--quiet",
+				`refs/remotes/origin/${branch}`,
+			]);
+			return `origin/${branch}`;
+		} catch {
+			return branch;
+		}
+	}
+
+	// --- Cherry-pick rebase methods ---
+
+	async setupCherryPick(targetBranch: string): Promise<string> {
+		if (!isValidBranchName(targetBranch)) {
+			throw new Error(`Invalid branch name: ${targetBranch}`);
+		}
+		const tempBranchName = `temp-rebase-${process.pid}`;
+		const checkoutTarget = await this.resolveBranchRef(targetBranch);
+		await this.git.checkout(["-b", tempBranchName, checkoutTarget]);
+		return tempBranchName;
+	}
+
+	async getMergeBase(branch1: string, branch2: string): Promise<string> {
+		if (!isValidBranchName(branch1)) {
+			throw new Error(`Invalid branch name: ${branch1}`);
+		}
+		if (!isValidBranchName(branch2)) {
+			throw new Error(`Invalid branch name: ${branch2}`);
+		}
+		const baseBranch = await this.resolveBranchRef(branch1);
+		const result = await this.git.raw(["merge-base", baseBranch, branch2]);
+		return result.trim();
+	}
+
+	async getCommitsToCherryPick(from: string, to: string): Promise<string[]> {
+		const result = await this.git.raw([
+			"rev-list",
+			"--reverse",
+			"--no-merges",
+			`${from}..${to}`,
+		]);
+		return result.trim().split("\n").filter(Boolean);
+	}
+
+	async cherryPick(
+		commitSha: string,
+		options?: { allowEmpty?: boolean; strategy?: "ours" | "theirs" },
+	): Promise<void> {
+		const args = ["cherry-pick"];
+		if (options?.allowEmpty) {
+			args.push("--allow-empty");
+		}
+		if (options?.strategy) {
+			args.push("-X", options.strategy);
+		}
+		args.push(commitSha);
+		await this.git.raw(args);
+	}
+
+	async continueCherryPick(): Promise<void> {
+		await this.git.raw(["cherry-pick", "--continue"]);
+	}
+
+	async skipCherryPick(): Promise<void> {
+		await this.git.raw(["cherry-pick", "--skip"]);
+	}
+
+	async abortCherryPick(): Promise<void> {
+		try {
+			await this.git.raw(["cherry-pick", "--abort"]);
+		} catch {}
+	}
+
+	async finishCherryPick(
+		currentBranch: string,
+		tempBranchName: string,
+	): Promise<void> {
+		await this.git.checkout(currentBranch);
+		await this.git.raw(["reset", "--hard", tempBranchName]);
+	}
+
+	async cleanupCherryPick(
+		tempBranchName: string,
+		originalBranch: string,
+	): Promise<void> {
+		try {
+			const current = await this.getCurrentBranch();
+			if (current === tempBranchName) {
+				await this.git.checkout(originalBranch);
+			}
+			await this.git.branch(["-D", tempBranchName]);
+		} catch {}
+	}
+
+	// --- Linear rebase method ---
+
+	async performLinearRebase(
 		currentBranch: string,
 		targetBranch: string,
 		progressCallback?: (message: string) => void,
-		options?: {
-			allowEmpty?: boolean;
-			linear?: boolean;
-			continueOnConflict?: boolean;
-		},
+		options?: { continueOnConflict?: boolean },
 	): Promise<void> {
-		const tempBranchName = `temp-rebase-${process.pid}`;
-
+		if (!isValidBranchName(targetBranch)) {
+			throw new Error(`Invalid branch name: ${targetBranch}`);
+		}
 		try {
 			progressCallback?.("Fetching all branches...");
 			await this.fetchAll();
@@ -124,81 +195,12 @@ export class GitOperations {
 				throw new Error(`Target branch '${targetBranch}' does not exist`);
 			}
 
-			if (options?.linear) {
-				return await this.performLinearRebase(
-					currentBranch,
-					targetBranch,
-					progressCallback,
-					options,
-				);
-			}
-
-			progressCallback?.("Finding merge base and commits...");
-			const mergeBase = await this.getMergeBase(targetBranch, currentBranch);
-			const commits = await this.getCommitsBetween(mergeBase, currentBranch);
-
-			progressCallback?.("Creating temporary branch...");
-			await this.createTemporaryBranch(tempBranchName, targetBranch);
-
-			progressCallback?.("Applying commits...");
-			for (const commit of commits) {
-				if (await this.isCommitMerge(commit)) {
-					progressCallback?.(`Skipping merge commit: ${commit}`);
-					continue;
-				}
-
-				progressCallback?.(`Applying commit: ${commit}`);
-				try {
-					if (options?.allowEmpty) {
-						await this.git.raw(["cherry-pick", "--allow-empty", commit]);
-					} else {
-						await this.cherryPick(commit);
-					}
-				} catch (error) {
-					const errorMessage =
-						error instanceof Error ? error.message : String(error);
-					if (
-						errorMessage.includes("empty") ||
-						errorMessage.includes("CONFLICT")
-					) {
-						try {
-							await this.git.raw(["cherry-pick", "--skip"]);
-							continue;
-						} catch {}
-					}
-					await this.abortCherryPick();
-					await this.git.checkout(currentBranch);
-					throw new Error(
-						`Failed to cherry-pick commit ${commit}: ${errorMessage}`,
-					);
-				}
-			}
-
-			progressCallback?.("Updating current branch...");
-			await this.git.checkout(currentBranch);
-			await this.git.raw(["reset", "--hard", tempBranchName]);
-
-			progressCallback?.("Rebase completed successfully");
-		} finally {
-			try {
-				await this.git.raw(["branch", "-D", tempBranchName]);
-			} catch {}
-		}
-	}
-
-	async performLinearRebase(
-		currentBranch: string,
-		targetBranch: string,
-		progressCallback?: (message: string) => void,
-		options?: { continueOnConflict?: boolean },
-	): Promise<void> {
-		try {
 			progressCallback?.("Starting linear rebase...");
-
 			await this.git.checkout(currentBranch);
 
-			const rebaseArgs = ["rebase", `origin/${targetBranch}`];
+			const rebaseTarget = await this.resolveBranchRef(targetBranch);
 
+			const rebaseArgs = ["rebase", rebaseTarget];
 			if (options?.continueOnConflict) {
 				rebaseArgs.push("-X", "ours");
 			}
@@ -211,18 +213,19 @@ export class GitOperations {
 					progressCallback?.(
 						"Conflicts detected, auto-resolving and continuing...",
 					);
-
 					await this.git.add(".");
 					await this.git.raw(["rebase", "--continue"]);
 					progressCallback?.(
 						"Linear rebase completed with conflicts auto-resolved",
 					);
-				} catch {
+				} catch (e) {
 					try {
 						await this.git.raw(["rebase", "--abort"]);
 					} catch {}
 					throw new Error(
-						`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
+						`Linear rebase failed during continue: ${
+							e instanceof Error ? e.message : String(e)
+						}`,
 					);
 				}
 			} else {
@@ -230,7 +233,9 @@ export class GitOperations {
 					await this.git.raw(["rebase", "--abort"]);
 				} catch {}
 				throw new Error(
-					`Linear rebase failed: ${error instanceof Error ? error.message : String(error)}`,
+					`Linear rebase failed: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
 				);
 			}
 		}
