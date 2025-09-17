@@ -63,7 +63,17 @@ export class GitOperations {
 			]);
 			return true;
 		} catch {
-			return false;
+			try {
+				await this.git.raw([
+					"show-ref",
+					"--verify",
+					"--quiet",
+					`refs/heads/${branch}`,
+				]);
+				return true;
+			} catch {
+				return false;
+			}
 		}
 	}
 
@@ -74,7 +84,18 @@ export class GitOperations {
 			throw new Error(`Invalid branch name: ${targetBranch}`);
 		}
 		const tempBranchName = `temp-rebase-${process.pid}`;
-		await this.git.checkout(["-b", tempBranchName, `origin/${targetBranch}`]);
+		let checkoutTarget = `origin/${targetBranch}`;
+		try {
+			await this.git.raw([
+				"show-ref",
+				"--verify",
+				"--quiet",
+				`refs/remotes/origin/${targetBranch}`,
+			]);
+		} catch {
+			checkoutTarget = targetBranch;
+		}
+		await this.git.checkout(["-b", tempBranchName, checkoutTarget]);
 		return tempBranchName;
 	}
 
@@ -85,11 +106,18 @@ export class GitOperations {
 		if (!isValidBranchName(branch2)) {
 			throw new Error(`Invalid branch name: ${branch2}`);
 		}
-		const result = await this.git.raw([
-			"merge-base",
-			`origin/${branch1}`,
-			branch2,
-		]);
+		let baseBranch = `origin/${branch1}`;
+		try {
+			await this.git.raw([
+				"show-ref",
+				"--verify",
+				"--quiet",
+				`refs/remotes/origin/${branch1}`,
+			]);
+		} catch {
+			baseBranch = branch1;
+		}
+		const result = await this.git.raw(["merge-base", baseBranch, branch2]);
 		return result.trim();
 	}
 
@@ -176,7 +204,19 @@ export class GitOperations {
 			progressCallback?.("Starting linear rebase...");
 			await this.git.checkout(currentBranch);
 
-			const rebaseArgs = ["rebase", `origin/${targetBranch}`];
+			let rebaseTarget = `origin/${targetBranch}`;
+			try {
+				await this.git.raw([
+					"show-ref",
+					"--verify",
+					"--quiet",
+					`refs/remotes/origin/${targetBranch}`,
+				]);
+			} catch {
+				rebaseTarget = targetBranch;
+			}
+
+			const rebaseArgs = ["rebase", rebaseTarget];
 			if (options?.continueOnConflict) {
 				rebaseArgs.push("-X", "ours");
 			}
