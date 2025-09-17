@@ -30,8 +30,10 @@ Options:
 - `--target, -t <branch>`: Target branch. If omitted, select interactively
 - `--allow-empty`: Allow empty commits during cherry-pick
 - `--linear`: Use `git rebase` for a linear history (default is cherry-pick)
-- `--continue-on-conflict`: Continue linear rebase when conflicts occur (`-X ours` + `--continue`)
+- `--continue-on-conflict`: In linear mode, continue rebase on conflicts using `ours` strategy
 - `--remote-target`: Select target branch from remote tracking branches (`origin/*`)
+- `--on-conflict <strategy>`: In cherry-pick mode, specify conflict resolution strategy.
+                             Strategies: skip (default), ours, theirs, pause.
 
 ### Examples
 
@@ -57,6 +59,32 @@ agrb --allow-empty
 In the default cherry-pick mode, non-merge commits between `merge-base(<target>, <current>)` and the current branch are applied onto a temporary branch created from `<target>`. Empty commits or conflicts are automatically skipped. You can intentionally include empty commits with `--allow-empty`. On success, the current branch is hard-reset to the temp branch.
 
 In linear mode (`--linear`), `git rebase origin/<target>` is executed. With `--continue-on-conflict`, the command tries `-X ours`, stages changes, and runs `git rebase --continue`.
+
+## Development
+
+```bash
+# Install dependencies
+bun install
+
+# Build
+bun run build
+
+# Dev (watch)
+bun run dev
+
+# Lint (check/fix)
+bun run test
+bun run lint
+```
+
+## License
+
+MIT
+
+## Contributing
+
+Issues and PRs are welcome. See CONTRIBUTING for details.
+the tool to continue.
 
 ## Development
 
