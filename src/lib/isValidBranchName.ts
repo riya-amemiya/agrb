@@ -25,7 +25,10 @@ export function isValidBranchName(branchName: string): boolean {
 
 	const components = branchName.split("/");
 	for (const component of components) {
-		if (component.length > 0 && (component.startsWith(".") || component.endsWith(".lock"))) {
+		if (
+			component.length > 0 &&
+			(component.startsWith(".") || component.endsWith(".lock"))
+		) {
 			return false;
 		}
 	}
