@@ -279,6 +279,15 @@ export default function App({
 	}, [gitOps]);
 
 	useEffect(() => {
+		if (state.status === "success") {
+			process.exit(0);
+		}
+		if (state.status === "error") {
+			process.exit(1);
+		}
+	}, [state.status]);
+
+	useEffect(() => {
 		if (state.status === "loading" && state.currentCommitIndex !== undefined) {
 			applyNextCommit();
 		}
