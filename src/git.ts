@@ -77,6 +77,20 @@ export class GitOperations {
 		}
 	}
 
+	private async resolveBranchRef(branch: string): Promise<string> {
+		try {
+			await this.git.raw([
+				"show-ref",
+				"--verify",
+				"--quiet",
+				`refs/remotes/origin/${branch}`,
+			]);
+			return `origin/${branch}`;
+		} catch {
+			return branch;
+		}
+	}
+
 	// --- Cherry-pick rebase methods ---
 
 	async setupCherryPick(targetBranch: string): Promise<string> {
@@ -84,17 +98,7 @@ export class GitOperations {
 			throw new Error(`Invalid branch name: ${targetBranch}`);
 		}
 		const tempBranchName = `temp-rebase-${process.pid}`;
-		let checkoutTarget = `origin/${targetBranch}`;
-		try {
-			await this.git.raw([
-				"show-ref",
-				"--verify",
-				"--quiet",
-				`refs/remotes/origin/${targetBranch}`,
-			]);
-		} catch {
-			checkoutTarget = targetBranch;
-		}
+		const checkoutTarget = await this.resolveBranchRef(targetBranch);
 		await this.git.checkout(["-b", tempBranchName, checkoutTarget]);
 		return tempBranchName;
 	}
@@ -106,17 +110,7 @@ export class GitOperations {
 		if (!isValidBranchName(branch2)) {
 			throw new Error(`Invalid branch name: ${branch2}`);
 		}
-		let baseBranch = `origin/${branch1}`;
-		try {
-			await this.git.raw([
-				"show-ref",
-				"--verify",
-				"--quiet",
-				`refs/remotes/origin/${branch1}`,
-			]);
-		} catch {
-			baseBranch = branch1;
-		}
+		const baseBranch = await this.resolveBranchRef(branch1);
 		const result = await this.git.raw(["merge-base", baseBranch, branch2]);
 		return result.trim();
 	}
@@ -204,17 +198,7 @@ export class GitOperations {
 			progressCallback?.("Starting linear rebase...");
 			await this.git.checkout(currentBranch);
 
-			let rebaseTarget = `origin/${targetBranch}`;
-			try {
-				await this.git.raw([
-					"show-ref",
-					"--verify",
-					"--quiet",
-					`refs/remotes/origin/${targetBranch}`,
-				]);
-			} catch {
-				rebaseTarget = targetBranch;
-			}
+			const rebaseTarget = await this.resolveBranchRef(targetBranch);
 
 			const rebaseArgs = ["rebase", rebaseTarget];
 			if (options?.continueOnConflict) {
