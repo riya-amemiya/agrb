@@ -346,7 +346,7 @@ export default function App({
 	};
 
 	useInput(
-		(input, key) => {
+async (input, key) => {
 			if (state.status === "paused_on_conflict" && key.return) {
 				resumeCherryPick();
 				return;
@@ -354,7 +354,7 @@ export default function App({
 
 			if (key.escape) {
 				if (state.tempBranchName && state.currentBranch) {
-					gitOps.cleanupCherryPick(state.tempBranchName, state.currentBranch);
+					await gitOps.cleanupCherryPick(state.tempBranchName, state.currentBranch);
 				}
 				exit();
 				return;
