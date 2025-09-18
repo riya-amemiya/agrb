@@ -196,11 +196,7 @@ export default function App({
 		}));
 
 		try {
-			const strategy =
-				onConflict === "ours" || onConflict === "theirs"
-					? onConflict
-					: undefined;
-			await gitOps.cherryPick(commit, { allowEmpty, strategy });
+			await gitOps.cherryPick(commit, { allowEmpty });
 			setState((prev) => ({
 				...prev,
 				currentCommitIndex: (prev.currentCommitIndex ?? -1) + 1,
@@ -231,6 +227,34 @@ export default function App({
 						...prev,
 						currentCommitIndex: (prev.currentCommitIndex ?? -1) + 1,
 					}));
+				} else if (onConflict === "ours" || onConflict === "theirs") {
+					try {
+						setState((prev) => ({
+							...prev,
+							message: `Conflict on commit ${commit.slice(
+								0,
+								7,
+							)}, resolving with '${onConflict}' strategy.`,
+						}));
+						await gitOps.resolveConflictWithStrategy(onConflict);
+						await gitOps.continueCherryPick();
+						setState((prev) => ({
+							...prev,
+							currentCommitIndex: (prev.currentCommitIndex ?? -1) + 1,
+						}));
+					} catch (resolveError) {
+						await gitOps.abortCherryPick();
+						await handleError(
+							new Error(
+								`Failed to auto-resolve conflict with '${onConflict}': ${
+									resolveError instanceof Error
+										? resolveError.message
+										: String(resolveError)
+								}`,
+							),
+							tempBranchName,
+						);
+					}
 				} else if (onConflict === "pause") {
 					setState((prev) => ({
 						...prev,
@@ -241,7 +265,6 @@ export default function App({
 						)}. Please resolve conflicts in another terminal, then press Enter to continue.`,
 					}));
 				} else {
-					// 'ours' or 'theirs' failed, or another error
 					await gitOps.abortCherryPick();
 					await handleError(error, tempBranchName);
 				}
