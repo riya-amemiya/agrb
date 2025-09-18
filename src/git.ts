@@ -127,14 +127,11 @@ export class GitOperations {
 
 	async cherryPick(
 		commitSha: string,
-		options?: { allowEmpty?: boolean; strategy?: "ours" | "theirs" },
+		options?: { allowEmpty?: boolean },
 	): Promise<void> {
 		const args = ["cherry-pick"];
 		if (options?.allowEmpty) {
 			args.push("--allow-empty");
-		}
-		if (options?.strategy) {
-			args.push("-X", options.strategy);
 		}
 		args.push(commitSha);
 		await this.git.raw(args);
@@ -152,6 +149,13 @@ export class GitOperations {
 		try {
 			await this.git.raw(["cherry-pick", "--abort"]);
 		} catch {}
+	}
+
+	async resolveConflictWithStrategy(
+		strategy: "ours" | "theirs",
+	): Promise<void> {
+		await this.git.checkout([`--${strategy}`, "."]);
+		await this.git.add(".");
 	}
 
 	async finishCherryPick(

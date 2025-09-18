@@ -32,12 +32,16 @@ export class ArgParser<T extends FlagsSchema> {
 		this.helpMessage = config.helpMessage;
 		this.version = config.version;
 
+		const camelToKebab = (str: string) =>
+			str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+
 		for (const longFlag in this.schema) {
 			if (Object.hasOwn(this.schema, longFlag)) {
 				const flagConfig = this.schema[longFlag];
-				this.longFlagMap[`--${longFlag}`] = longFlag;
+				const kebabCaseFlag = camelToKebab(longFlag);
+				this.longFlagMap[`--${kebabCaseFlag}`] = longFlag;
 				if (flagConfig?.shortFlag) {
-					this.aliases[`-${flagConfig.shortFlag}`] = `--${longFlag}`;
+					this.aliases[`-${flagConfig.shortFlag}`] = `--${kebabCaseFlag}`;
 				}
 			}
 		}
