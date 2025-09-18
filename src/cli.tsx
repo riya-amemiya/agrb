@@ -93,8 +93,8 @@ try {
 } catch (error) {
 	if (error instanceof Error) {
 		console.error(`❌ ${error.message}`);
-		process.exit(1);
+	} else {
+		console.error(error);
 	}
-	console.error(error);
 	process.exit(1);
 }
