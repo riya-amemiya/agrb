@@ -58,7 +58,7 @@ export default function App({
 	stateRef.current = state;
 
 	const onConflict: OnConflictStrategy =
-		onConflictRaw && isValidOnConflict(onConflictRaw) ? onConflictRaw : "skip";
+		onConflictRaw && isValidOnConflict(onConflictRaw) ? onConflictRaw : "pause";
 
 	const handleError = useCallback(
 		async (error: unknown, tempBranchName?: string) => {
@@ -344,7 +344,13 @@ export default function App({
 		startCherryPickRebase,
 	]);
 
-	const handleBranchSelect = (item: { label: string; value: string }) => {
+	const handleBranchSelect = (
+		item: { label: string; value: string } | undefined,
+	) => {
+		if (!item) {
+			handleError(new Error("No valid branch selected. Please try again."));
+			return;
+		}
 		if (state.currentBranch) {
 			if (linear) {
 				performLinearRebase(state.currentBranch, item.value);
