@@ -61,31 +61,40 @@ const schema = {
 	},
 } as const;
 
-const parser = new ArgParser({
-	schema,
-	helpMessage,
-	version: packageJson.version,
-});
+try {
+	const parser = new ArgParser({
+		schema,
+		helpMessage,
+		version: packageJson.version,
+	});
 
-const cli = parser.parse(process.argv.slice(2));
+	const cli = parser.parse(process.argv.slice(2));
 
-if (cli.help) {
-	console.log(cli.help);
-	process.exit(0);
+	if (cli.help) {
+		console.log(cli.help);
+		process.exit(0);
+	}
+
+	if (cli.version) {
+		console.log(cli.version);
+		process.exit(0);
+	}
+
+	render(
+		<App
+			targetBranch={cli.flags.target}
+			allowEmpty={cli.flags.allowEmpty}
+			linear={cli.flags.linear}
+			continueOnConflict={cli.flags.continueOnConflict}
+			remoteTarget={cli.flags.remoteTarget}
+			onConflict={cli.flags.onConflict}
+		/>,
+	);
+} catch (error) {
+	if (error instanceof Error) {
+		console.error(`❌ ${error.message}`);
+		process.exit(1);
+	}
+	console.error(error);
+	process.exit(1);
 }
-
-if (cli.version) {
-	console.log(cli.version);
-	process.exit(0);
-}
-
-render(
-	<App
-		targetBranch={cli.flags.target}
-		allowEmpty={cli.flags.allowEmpty}
-		linear={cli.flags.linear}
-		continueOnConflict={cli.flags.continueOnConflict}
-		remoteTarget={cli.flags.remoteTarget}
-		onConflict={cli.flags.onConflict}
-	/>,
-);
