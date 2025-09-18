@@ -344,7 +344,9 @@ export default function App({
 		startCherryPickRebase,
 	]);
 
-	const handleBranchSelect = (item: { label: string; value: string }) => {
+	const handleBranchSelect = (
+		item: { label: string; value: string } | undefined,
+	) => {
 		if (!item) {
 			handleError(new Error("No valid branch selected. Please try again."));
 			return;
