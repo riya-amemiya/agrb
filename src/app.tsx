@@ -58,7 +58,7 @@ export default function App({
 	stateRef.current = state;
 
 	const onConflict: OnConflictStrategy =
-		onConflictRaw && isValidOnConflict(onConflictRaw) ? onConflictRaw : "skip";
+		onConflictRaw && isValidOnConflict(onConflictRaw) ? onConflictRaw : "pause";
 
 	const handleError = useCallback(
 		async (error: unknown, tempBranchName?: string) => {

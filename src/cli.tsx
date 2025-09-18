@@ -22,11 +22,11 @@ Options
     --continue-on-conflict   In linear mode, continue rebase on conflicts using 'ours' strategy.
     --on-conflict <strategy> In cherry-pick mode, specify conflict resolution strategy.
                              Strategies:
-                               - skip (default): automatically skip the conflicting commit.
+                               - pause (default): pause on conflict, allowing manual resolution.
+                                 After resolving, press Enter to continue.
+                               - skip: automatically skip the conflicting commit.
                                - ours: automatically resolve conflict using 'ours' strategy.
                                - theirs: automatically resolve conflict using 'theirs' strategy.
-                               - pause: pause on conflict, allowing manual resolution.
-                                 After resolving, press Enter to continue.
     --remote-target          Use remote branches for target selection
     -v, --version            Show version
     -h, --help               Show help
