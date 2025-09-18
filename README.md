@@ -33,7 +33,7 @@ Options:
 - `--continue-on-conflict`: In linear mode, continue rebase on conflicts using `ours` strategy
 - `--remote-target`: Select target branch from remote tracking branches (`origin/*`)
 - `--on-conflict <strategy>`: In cherry-pick mode, specify conflict resolution strategy.
-                             Strategies: skip (default), ours, theirs, pause.
+                             Strategies: pause (default), skip, ours, theirs.
 
 ### Examples
 
