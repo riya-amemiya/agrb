@@ -5,9 +5,10 @@ import { useState } from "react";
 type Props = {
 	branches: string[];
 	onSelect: (branch: string) => void;
+	labelPrefix?: string;
 };
 
-export const BranchSelector = ({ branches, onSelect }: Props) => {
+export const BranchSelector = ({ branches, onSelect, labelPrefix }: Props) => {
 	const [searchTerm, setSearchTerm] = useState("");
 
 	useInput(
@@ -30,7 +31,8 @@ export const BranchSelector = ({ branches, onSelect }: Props) => {
 
 	const filteredBranches =
 		branches.filter((branch) => {
-			const branchLower = branch.toLowerCase();
+			const displayLabel = `${labelPrefix ?? ""}${branch}`;
+			const labelLower = displayLabel.toLowerCase();
 			const searchTerms = searchTerm
 				.toLowerCase()
 				.split(/\s+/)
@@ -38,7 +40,7 @@ export const BranchSelector = ({ branches, onSelect }: Props) => {
 			if (searchTerms.length === 0) {
 				return true;
 			}
-			return searchTerms.every((term) => branchLower.includes(term));
+			return searchTerms.every((term) => labelLower.includes(term));
 		}) || [];
 
 	const handleSelect = (item: { label: string; value: string } | undefined) => {
@@ -53,7 +55,7 @@ export const BranchSelector = ({ branches, onSelect }: Props) => {
 			{searchTerm && <Text color="gray">Filter: {searchTerm}</Text>}
 			<SelectInput
 				items={filteredBranches.map((branch) => ({
-					label: branch,
+					label: `${labelPrefix ?? ""}${branch}`,
 					value: branch,
 				}))}
 				onSelect={handleSelect}
