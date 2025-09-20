@@ -39,6 +39,28 @@ Options:
     - `skip`: automatically skip the conflicting commit.
     - `ours`: automatically resolve conflict using 'ours' strategy.
     - `theirs`: automatically resolve conflict using 'theirs' strategy.
+- `--config <command>`: Manage configuration (show, set, edit, reset)
+- `--no-config`: Disable loading of configuration files
+- `-v, --version`: Show version
+- `-h, --help`: Show help
+
+### Configuration
+
+You can configure `agrb` via a configuration file. The configuration is resolved in the following order of precedence:
+
+1. Command-line flags
+2. Local configuration (`.agrbrc` in the project root)
+3. Global configuration (`~/.config/agrb/config.json`)
+4. Default values
+
+Use the `--no-config` flag to disable loading of configuration files.
+
+#### Managing Configuration
+
+- `agrb --config show`: Display the current effective configuration.
+- `agrb --config set`: Start an interactive editor to modify the global configuration.
+- `agrb --config edit`: Open the global configuration file in your default editor (`$EDITOR`).
+- `agrb --config reset`: Reset the global configuration to its default values.
 
 ### Examples
 

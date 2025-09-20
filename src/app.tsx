@@ -1,7 +1,7 @@
 import { Box, Text, useApp, useInput } from "ink";
-import SelectInput from "ink-select-input";
 import Spinner from "ink-spinner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BranchSelector } from "./components/BranchSelector.js";
 import { GitOperations } from "./git.js";
 import { sanitizeString } from "./lib/sanitizeString.js";
 
@@ -51,7 +51,6 @@ export default function App({
 		message: "Initializing...",
 		targetBranch: initialTargetBranch,
 	});
-	const [searchTerm, setSearchTerm] = useState("");
 	const gitOps = useMemo(() => new GitOperations(), []);
 
 	const stateRef = useRef(state);
@@ -367,24 +366,18 @@ export default function App({
 		startCherryPickRebase,
 	]);
 
-	const handleBranchSelect = (
-		item: { label: string; value: string } | undefined,
-	) => {
-		if (!item) {
-			handleError(new Error("No valid branch selected. Please try again."));
-			return;
-		}
+	const handleBranchSelect = (branch: string) => {
 		if (state.currentBranch) {
 			if (linear) {
-				performLinearRebase(state.currentBranch, item.value);
+				performLinearRebase(state.currentBranch, branch);
 			} else {
-				startCherryPickRebase(state.currentBranch, item.value);
+				startCherryPickRebase(state.currentBranch, branch);
 			}
 		}
 	};
 
 	useInput(
-		async (input, key) => {
+		async (_input, key) => {
 			if (state.status === "paused_on_conflict" && key.return) {
 				resumeCherryPick();
 				return;
@@ -400,36 +393,9 @@ export default function App({
 				exit();
 				return;
 			}
-
-			if (state.status !== "selecting") {
-				return;
-			}
-
-			if (key.return || key.upArrow || key.downArrow) {
-				return;
-			}
-
-			if (key.backspace || key.delete) {
-				setSearchTerm((prev) => prev.slice(0, -1));
-			} else if (input && !key.ctrl && !key.meta) {
-				setSearchTerm((prev) => prev + input);
-			}
 		},
 		{ isActive: true },
 	);
-
-	const filteredBranches =
-		state.availableBranches?.filter((branch) => {
-			const branchLower = branch.toLowerCase();
-			const searchTerms = searchTerm
-				.toLowerCase()
-				.split(/\s+/)
-				.filter((term) => term.length > 0);
-			if (searchTerms.length === 0) {
-				return true;
-			}
-			return searchTerms.every((term) => branchLower.includes(term));
-		}) || [];
 
 	const sanitizedMessage = sanitizeString(state.message);
 
@@ -455,18 +421,11 @@ export default function App({
 						<Spinner type="dots" /> {sanitizedMessage}
 					</Text>
 				)}
-				{state.status === "selecting" && (
-					<Box flexDirection="column">
-						<Text>{sanitizedMessage}</Text>
-						{searchTerm && <Text color="gray">Filter: {searchTerm}</Text>}
-						<SelectInput
-							items={filteredBranches.map((branch) => ({
-								label: branch,
-								value: branch,
-							}))}
-							onSelect={handleBranchSelect}
-						/>
-					</Box>
+				{state.status === "selecting" && state.availableBranches && (
+					<BranchSelector
+						branches={state.availableBranches}
+						onSelect={handleBranchSelect}
+					/>
 				)}
 				{state.status === "paused_on_conflict" && (
 					<Text color="yellow">⏸ {sanitizedMessage}</Text>
