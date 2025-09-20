@@ -29,10 +29,14 @@ export const BranchSelector = ({ branches, onSelect, labelPrefix }: Props) => {
 		{ isActive: true },
 	);
 
-	const filteredBranches =
-		branches.filter((branch) => {
-			const displayLabel = `${labelPrefix ?? ""}${branch}`;
-			const labelLower = displayLabel.toLowerCase();
+	const items = branches.map((branch) => ({
+		label: `${labelPrefix ?? ""}${branch}`,
+		value: branch,
+	}));
+
+	const filteredItems =
+		items.filter(({ label }) => {
+			const labelLower = label.toLowerCase();
 			const searchTerms = searchTerm
 				.toLowerCase()
 				.split(/\s+/)
@@ -53,13 +57,7 @@ export const BranchSelector = ({ branches, onSelect, labelPrefix }: Props) => {
 		<Box flexDirection="column">
 			<Text>Select target branch (type to filter):</Text>
 			{searchTerm && <Text color="gray">Filter: {searchTerm}</Text>}
-			<SelectInput
-				items={filteredBranches.map((branch) => ({
-					label: `${labelPrefix ?? ""}${branch}`,
-					value: branch,
-				}))}
-				onSelect={handleSelect}
-			/>
+			<SelectInput items={filteredItems} onSelect={handleSelect} />
 		</Box>
 	);
 };
