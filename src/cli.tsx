@@ -5,10 +5,14 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
 import { render } from "ink";
-import App from "./app";
-import { ConfigEditor } from "./components/ConfigEditor";
-import { ArgParser } from "./lib/arg-parser";
-import { GLOBAL_CONFIG_PATH, getConfig, resetGlobalConfig } from "./lib/config";
+import App from "./app.js";
+import { ConfigEditor } from "./components/ConfigEditor.js";
+import { ArgParser } from "./lib/arg-parser.js";
+import {
+	GLOBAL_CONFIG_PATH,
+	getConfig,
+	resetGlobalConfig,
+} from "./lib/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

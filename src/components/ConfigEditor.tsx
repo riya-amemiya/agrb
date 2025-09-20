@@ -2,15 +2,15 @@ import { Box, Text, useApp, useInput } from "ink";
 import SelectInput, { type ItemProps } from "ink-select-input";
 import Spinner from "ink-spinner";
 import { useEffect, useMemo, useState } from "react";
-import { isDeepEqual } from "umt/module";
-import { GitOperations } from "../git";
+import { GitOperations } from "../git.js";
 import {
 	type AgreConfig,
 	defaultConfig,
 	getConfig,
 	writeGlobalConfig,
-} from "../lib/config";
-import { BranchSelector } from "./BranchSelector";
+} from "../lib/config.js";
+import { isDeepEqual } from "../lib/isDeepEqual.js";
+import { BranchSelector } from "./BranchSelector.js";
 
 type ConfigItemKey = keyof AgreConfig;
 

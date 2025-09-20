@@ -1,5 +1,5 @@
 import { type SimpleGit, type SimpleGitOptions, simpleGit } from "simple-git";
-import { isValidBranchName } from "./lib/isValidBranchName";
+import { isValidBranchName } from "./lib/isValidBranchName.js";
 
 export class GitOperations {
 	private git: SimpleGit;

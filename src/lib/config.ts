@@ -3,12 +3,13 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
 	boolean,
-	isDictionaryObject,
 	number,
 	object,
+	optional,
+	picklist,
+	safeParse,
 	string,
-} from "umt/module/Validate";
-import type { ValidateReturnType } from "umt/module/Validate/type";
+} from "valibot";
 
 const CONFIG_FILE_NAME = "config.json";
 const CONFIG_DIR_NAME = "agrb";
@@ -17,28 +18,26 @@ const LOCAL_CONFIG_FILE_NAME = ".agrbrc";
 const onConflictValues = ["skip", "ours", "theirs", "pause"] as const;
 type OnConflictStrategy = (typeof onConflictValues)[number];
 
-// Custom validator for enum-like strings
-const isOfEnum =
-	<T extends string>(values: readonly T[]) =>
-	(message?: string): ValidateReturnType<string> => ({
-		type: "string",
-		validate: (value: string) => values.includes(value as T),
-		message: message || `Value must be one of: ${values.join(", ")}`,
-	});
+// valibot schema (all fields optional to allow partial configs)
+const configSchema = object({
+	target: optional(string()),
+	allowEmpty: optional(boolean()),
+	linear: optional(boolean()),
+	continueOnConflict: optional(boolean()),
+	remoteTarget: optional(boolean()),
+	onConflict: optional(picklist(onConflictValues)),
+	schemaVersion: optional(number()),
+});
 
-const configSchema = {
-	target: string(),
-	allowEmpty: boolean(),
-	linear: boolean(),
-	continueOnConflict: boolean(),
-	remoteTarget: boolean(),
-	onConflict: string([
-		isOfEnum(onConflictValues)("Invalid onConflict strategy"),
-	]),
-	schemaVersion: number(),
-};
-
-const configValidator = object(configSchema);
+const configKeys = [
+	"target",
+	"allowEmpty",
+	"linear",
+	"continueOnConflict",
+	"remoteTarget",
+	"onConflict",
+	"schemaVersion",
+] as const;
 
 export interface AgreConfig {
 	target?: string;
@@ -66,31 +65,26 @@ export const defaultConfig: Required<
 };
 
 const validateConfig = (config: unknown): AgreConfig => {
-	if (!isDictionaryObject(config)) {
-		throw new Error("Invalid config format: must be an object.");
+	const result = safeParse(configSchema, config);
+	if (!result.success) {
+		const errors = result.issues.map((issue) => {
+			const path = issue.path
+				?.map((p) => {
+					if ("key" in p && p.key !== undefined) {
+						return String(p.key);
+					}
+					if ("index" in p && p.index !== undefined) {
+						return String(p.index);
+					}
+					return p.type;
+				})
+				.filter(Boolean)
+				.join(".");
+			return `'${path || "root"}': ${issue.message}`;
+		});
+		throw new Error(`Configuration errors:\n- ${errors.join("\n- ")}`);
 	}
-
-	// biome-ignore lint/suspicious/noExplicitAny: We are intentionally passing an unknown object
-	const result = configValidator(config as any);
-	if (!result.validate) {
-		// umt's object validator message isn't very detailed, so we do our own iteration for better errors
-		const errors: string[] = [];
-		for (const key in config) {
-			if (Object.hasOwn(configSchema, key)) {
-				const validator = configSchema[key as keyof typeof configSchema];
-				// @ts-expect-error We are intentionally iterating over a heterogenous object
-				const validationResult = validator(config[key]);
-				if (!validationResult.validate) {
-					errors.push(`'${key}': ${validationResult.message}`);
-				}
-			}
-		}
-		if (errors.length > 0) {
-			throw new Error(`Configuration errors:\n- ${errors.join("\n- ")}`);
-		}
-	}
-
-	return config as AgreConfig;
+	return result.output as AgreConfig;
 };
 
 const readConfigFile = async (filePath: string): Promise<AgreConfig | null> => {
@@ -152,7 +146,7 @@ export const getConfig = async (
 	};
 
 	const sources: ConfigResult["sources"] = {};
-	for (const key of Object.keys(configSchema)) {
+	for (const key of configKeys) {
 		const k = key as keyof AgreConfig;
 		if (localConfig && Object.hasOwn(localConfig, k)) {
 			sources[k] = "local";
