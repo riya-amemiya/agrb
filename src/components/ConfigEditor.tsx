@@ -1,16 +1,15 @@
 import { Box, Text, useApp, useInput } from "ink";
 import SelectInput, { type ItemProps } from "ink-select-input";
 import Spinner from "ink-spinner";
-import { useEffect, useMemo, useState } from "react";
-import { GitOperations } from "../git.js";
+import { useEffect, useState } from "react";
 import {
 	type AgreConfig,
+	configKeys,
 	defaultConfig,
 	getConfig,
 	writeGlobalConfig,
 } from "../lib/config.js";
 import { isDeepEqual } from "../lib/isDeepEqual.js";
-import { BranchSelector } from "./BranchSelector.js";
 
 type ConfigItemKey = keyof AgreConfig;
 
@@ -19,7 +18,6 @@ type Status =
 	| "selecting"
 	| "editing_boolean"
 	| "editing_onConflict"
-	| "editing_target"
 	| "confirm_quit"
 	| "saving"
 	| "done";
@@ -44,8 +42,6 @@ export const ConfigEditor = () => {
 	const [initialConfig, setInitialConfig] = useState<AgreConfig | null>(null);
 	const [status, setStatus] = useState<Status>("loading");
 	const [editingItem, setEditingItem] = useState<ConfigItemKey | null>(null);
-	const [availableBranches, setAvailableBranches] = useState<string[]>([]);
-	const gitOps = useMemo(() => new GitOperations(), []);
 	const isDirty =
 		config && initialConfig ? !isDeepEqual(config, initialConfig) : false;
 
@@ -55,11 +51,9 @@ export const ConfigEditor = () => {
 			const fullConfig = { ...defaultConfig, ...loadedConfig };
 			setConfig(fullConfig);
 			setInitialConfig(JSON.parse(JSON.stringify(fullConfig)));
-			const branches = await gitOps.getLocalBranches();
-			setAvailableBranches(branches);
 			setStatus("selecting");
 		})();
-	}, [gitOps]);
+	}, []);
 
 	useInput(
 		(input) => {
@@ -79,14 +73,15 @@ export const ConfigEditor = () => {
 	);
 
 	const items = config
-		? (Object.keys(defaultConfig) as (keyof typeof defaultConfig)[]).map(
-				(key) => ({
+		? configKeys
+				.filter((key) => key !== "schemaVersion")
+				.map((key) => ({
 					label: `${key}: ${String(
-						config[key as keyof AgreConfig] ?? defaultConfig[key],
+						config[key as keyof AgreConfig] ??
+							(defaultConfig as AgreConfig)[key as keyof AgreConfig],
 					)}`,
 					value: key,
-				}),
-			)
+				}))
 		: [];
 
 	const handleSelect = (item: { value: ConfigItemKey }) => {
@@ -96,8 +91,6 @@ export const ConfigEditor = () => {
 			setStatus("editing_boolean");
 		} else if (item.value === "onConflict") {
 			setStatus("editing_onConflict");
-		} else if (item.value === "target") {
-			setStatus("editing_target");
 		}
 	};
 
@@ -121,14 +114,6 @@ export const ConfigEditor = () => {
 	const handleOnConflictChange = (item: { value: string }) => {
 		if (config && editingItem) {
 			setConfig({ ...config, [editingItem]: item.value });
-			setEditingItem(null);
-			setStatus("selecting");
-		}
-	};
-
-	const handleTargetChange = (branch: string) => {
-		if (config && editingItem) {
-			setConfig({ ...config, [editingItem]: branch });
 			setEditingItem(null);
 			setStatus("selecting");
 		}
@@ -177,13 +162,6 @@ export const ConfigEditor = () => {
 							itemComponent={Item}
 						/>
 					</Box>
-				);
-			case "editing_target":
-				return (
-					<BranchSelector
-						branches={availableBranches}
-						onSelect={handleTargetChange}
-					/>
 				);
 			case "confirm_quit":
 				return (

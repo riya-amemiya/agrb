@@ -8,7 +8,6 @@ import {
 	optional,
 	picklist,
 	safeParse,
-	string,
 } from "valibot";
 
 const CONFIG_FILE_NAME = "config.json";
@@ -20,7 +19,6 @@ type OnConflictStrategy = (typeof onConflictValues)[number];
 
 // valibot schema (all fields optional to allow partial configs)
 const configSchema = object({
-	target: optional(string()),
 	allowEmpty: optional(boolean()),
 	linear: optional(boolean()),
 	continueOnConflict: optional(boolean()),
@@ -29,8 +27,7 @@ const configSchema = object({
 	schemaVersion: optional(number()),
 });
 
-const configKeys = [
-	"target",
+export const configKeys = [
 	"allowEmpty",
 	"linear",
 	"continueOnConflict",
@@ -40,7 +37,6 @@ const configKeys = [
 ] as const;
 
 export interface AgreConfig {
-	target?: string;
 	allowEmpty?: boolean;
 	linear?: boolean;
 	continueOnConflict?: boolean;
@@ -54,9 +50,7 @@ export interface ConfigResult {
 	sources: Partial<Record<keyof AgreConfig, "default" | "global" | "local">>;
 }
 
-export const defaultConfig: Required<
-	Omit<AgreConfig, "target" | "schemaVersion">
-> = {
+export const defaultConfig: Omit<AgreConfig, "schemaVersion"> = {
 	allowEmpty: false,
 	linear: false,
 	continueOnConflict: false,

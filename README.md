@@ -39,7 +39,8 @@ Options:
     - `skip`: automatically skip the conflicting commit.
     - `ours`: automatically resolve conflict using 'ours' strategy.
     - `theirs`: automatically resolve conflict using 'theirs' strategy.
-- `--remote-target`: Use remote branches for target selection
+- `--config <command>`: Manage configuration (show, set, edit, reset)
+- `--no-config`: Disable loading of configuration files
 - `-v, --version`: Show version
 - `-h, --help`: Show help
 

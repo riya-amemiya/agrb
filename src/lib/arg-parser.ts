@@ -6,7 +6,9 @@ interface FlagConfig {
 type FlagsSchema = { [key: string]: FlagConfig };
 
 type Flags<T extends FlagsSchema> = {
-	[K in keyof T]: T[K]["type"] extends "string" ? string | undefined : boolean;
+	[K in keyof T]: T[K]["type"] extends "string"
+		? string | undefined
+		: boolean | undefined;
 };
 
 interface ParsedArgs<T extends FlagsSchema> {
@@ -54,12 +56,7 @@ export class ArgParser<T extends FlagsSchema> {
 
 		for (const longFlag in this.schema) {
 			if (Object.hasOwn(this.schema, longFlag)) {
-				const flagConfig = this.schema[longFlag];
-				if (flagConfig?.type === "boolean") {
-					flags[longFlag] = false as Flags<T>[keyof T];
-				} else {
-					flags[longFlag] = undefined as Flags<T>[keyof T];
-				}
+				flags[longFlag] = undefined as Flags<T>[keyof T];
 			}
 		}
 

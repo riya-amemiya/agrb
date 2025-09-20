@@ -155,12 +155,12 @@ try {
 		const { config } = await getConfig();
 
 		const props = {
-			targetBranch: cli.flags.target ?? config.target,
-			allowEmpty: cli.flags.allowEmpty || config.allowEmpty,
-			linear: cli.flags.linear || config.linear,
+			targetBranch: cli.flags.target,
+			allowEmpty: cli.flags.allowEmpty ?? config.allowEmpty,
+			linear: cli.flags.linear ?? config.linear,
 			continueOnConflict:
-				cli.flags.continueOnConflict || config.continueOnConflict,
-			remoteTarget: cli.flags.remoteTarget || config.remoteTarget,
+				cli.flags.continueOnConflict ?? config.continueOnConflict,
+			remoteTarget: cli.flags.remoteTarget ?? config.remoteTarget,
 			onConflict: cli.flags.onConflict ?? config.onConflict,
 		};
 

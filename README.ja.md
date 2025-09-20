@@ -29,11 +29,10 @@ agrb [options]
     - `skip`: コンフリクトしたコミットを自動的にスキップします。
     - `ours`: `ours`戦略を用いてコンフリクトを自動解決します。
     - `theirs`: `theirs`戦略を用いてコンフリクトを自動解決します。
-    --remote-target          Use remote branches for target selection
-    --config <command>       Manage configuration (show, set, edit, reset)
-    --no-config              Disable loading of configuration files
-    -v, --version            Show version
-    -h, --help               Show help
+- `--config <command>`: 設定の管理 (show, set, edit, reset)
+- `--no-config`: Disable loading of configuration files
+- `-v, --version`: Show version
+- `-h, --help`: Show help
 
 ### 設定ファイル
 
