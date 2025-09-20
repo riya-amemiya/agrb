@@ -29,6 +29,29 @@ agrb [options]
     - `skip`: コンフリクトしたコミットを自動的にスキップします。
     - `ours`: `ours`戦略を用いてコンフリクトを自動解決します。
     - `theirs`: `theirs`戦略を用いてコンフリクトを自動解決します。
+    --remote-target          Use remote branches for target selection
+    --config <command>       Manage configuration (show, set, edit, reset)
+    --no-config              Disable loading of configuration files
+    -v, --version            Show version
+    -h, --help               Show help
+
+### 設定ファイル
+
+設定ファイルで`agrb`の挙動をカスタマイズできます。設定は以下の優先順位で解決されます。
+
+1. コマンドラインフラグ
+2. ローカル設定 (`プロジェクトルート/.agrbrc`)
+3. グローバル設定 (`~/.config/agrb/config.json`)
+4. デフォルト値
+
+`--no-config` フラグを使用すると、設定ファイルの読み込みを無効化できます。
+
+#### 設定の管理
+
+- `agrb --config show`: 現在の有効な設定を表示します。
+- `agrb --config set`: 対話的なエディタを起動し、グローバル設定を変更します。
+- `agrb --config edit`: デフォルトエディタ (`$EDITOR`) でグローバル設定ファイルを開きます。
+- `agrb --config reset`: グローバル設定をデフォルト値にリセットします。
 
 ### 例
 
