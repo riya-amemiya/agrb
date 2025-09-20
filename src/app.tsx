@@ -425,6 +425,7 @@ export default function App({
 					<BranchSelector
 						branches={state.availableBranches}
 						onSelect={handleBranchSelect}
+						labelPrefix={remoteTarget ? "origin/" : undefined}
 					/>
 				)}
 				{state.status === "paused_on_conflict" && (
