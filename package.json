@@ -1,6 +1,6 @@
 {
 	"name": "agrb",
-	"version": "0.6.1",
+	"version": "1.0.0",
 	"description": "Interactive CLI to rebase a branch onto another safely (cherry-pick or linear rebase)",
 	"license": "MIT",
 	"bin": "dist/cli.js",
@@ -46,6 +46,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.2.4",
 		"@sindresorhus/tsconfig": "8.0.1",
+		"@types/bun": "^1.2.22",
 		"@types/react": "19.1.13",
 		"chalk": "5.6.2",
 		"ink-testing-library": "4.0.0",

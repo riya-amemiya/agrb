@@ -14,7 +14,6 @@ export const BranchSelector = ({ branches, onSelect, labelPrefix }: Props) => {
 	useInput(
 		(input, key) => {
 			if (key.escape) {
-				// Let parent component handle exit
 				return;
 			}
 			if (key.return || key.upArrow || key.downArrow) {

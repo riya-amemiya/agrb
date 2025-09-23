@@ -40,7 +40,12 @@ Options:
     - `ours`: automatically resolve conflict using 'ours' strategy.
     - `theirs`: automatically resolve conflict using 'theirs' strategy.
 - `--config <command>`: Manage configuration (show, set, edit, reset)
-- `--no-config`: Disable loading of configuration files
+- `--no-config`: Disable loading of configuration files (CLI flags still apply)
+- `--dry-run`: Print the plan without making changes
+- `-y, --yes`: Skip confirmation prompts
+- `--autostash`: Stash changes before running; pop after success
+- `--push-with-lease`: After success, push with `--force-with-lease`
+- `--no-backup`: Do not create a backup tag before hard reset
 - `-v, --version`: Show version
 - `-h, --help`: Show help
 
@@ -85,7 +90,9 @@ agrb --allow-empty
 
 In the default cherry-pick mode, non-merge commits between `merge-base(<target>, <current>)` and the current branch are applied onto a temporary branch created from `<target>`. Empty commits or conflicts are automatically skipped. You can intentionally include empty commits with `--allow-empty`. On success, the current branch is hard-reset to the temp branch.
 
-In linear mode (`--linear`), `git rebase origin/<target>` is executed. With `--continue-on-conflict`, the command tries `-X ours`, stages changes, and runs `git rebase --continue`.
+In linear mode (`--linear`), `git rebase origin/<target>` is executed. With `--continue-on-conflict`, the command tries `-X ours`, stages changes, and runs `git rebase --continue`. If continuing fails, the rebase is aborted and an error is shown.
+
+Press ESC at any time to cancel. In cherry-pick conflicts with `--on-conflict pause`, resolve in another terminal and press Enter to continue.
 
 ## Development
 

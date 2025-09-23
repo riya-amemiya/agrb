@@ -17,7 +17,6 @@ const LOCAL_CONFIG_FILE_NAME = ".agrbrc";
 const onConflictValues = ["skip", "ours", "theirs", "pause"] as const;
 type OnConflictStrategy = (typeof onConflictValues)[number];
 
-// valibot schema (all fields optional to allow partial configs)
 const configSchema = object({
 	allowEmpty: optional(boolean()),
 	linear: optional(boolean()),
