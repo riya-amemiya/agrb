@@ -14,6 +14,11 @@ type Props = {
 	continueOnConflict?: boolean;
 	remoteTarget?: boolean;
 	onConflict?: string;
+	dryRun?: boolean;
+	yes?: boolean;
+	autostash?: boolean;
+	pushWithLease?: boolean;
+	noBackup?: boolean;
 };
 
 type Status =
@@ -21,7 +26,8 @@ type Status =
 	| "success"
 	| "error"
 	| "selecting"
-	| "paused_on_conflict";
+	| "paused_on_conflict"
+	| "confirm";
 
 interface RebaseState {
 	status: Status;
@@ -32,6 +38,8 @@ interface RebaseState {
 	commitsToPick?: string[];
 	currentCommitIndex?: number;
 	tempBranchName?: string;
+	stashRef?: string | null;
+	pendingMode?: "cherry" | "linear";
 }
 
 const isValidOnConflict = (s: string): s is OnConflictStrategy =>
@@ -44,6 +52,11 @@ export default function App({
 	continueOnConflict,
 	remoteTarget,
 	onConflict: onConflictRaw,
+	dryRun,
+	yes,
+	autostash,
+	pushWithLease,
+	noBackup,
 }: Props) {
 	const { exit } = useApp();
 	const [state, setState] = useState<RebaseState>({
@@ -81,6 +94,31 @@ export default function App({
 	const performLinearRebase = useCallback(
 		async (currentBranch: string, target: string) => {
 			try {
+				if (dryRun) {
+					setState((prev) => ({
+						...prev,
+						status: "success",
+						message: `DRY-RUN: Would rebase ${currentBranch} onto ${target} (linear${
+							continueOnConflict ? ", -X ours" : ""
+						}).`,
+						currentBranch,
+						targetBranch: target,
+					}));
+					return;
+				}
+
+				if (!yes && stateRef.current.status !== "confirm") {
+					setState((prev) => ({
+						...prev,
+						status: "confirm",
+						message: `Proceed to rebase ${currentBranch} onto ${target} (linear)? Press Enter to continue, Esc to cancel.`,
+						currentBranch,
+						targetBranch: target,
+						pendingMode: "linear",
+					}));
+					return;
+				}
+
 				setState((prev) => ({
 					...prev,
 					status: "loading",
@@ -88,12 +126,24 @@ export default function App({
 					currentBranch,
 					targetBranch: target,
 				}));
+
+				if (autostash) {
+					const ref = await gitOps.startAutostash();
+					setState((prev) => ({ ...prev, stashRef: ref }));
+				}
+
 				await gitOps.performLinearRebase(
 					currentBranch,
 					target,
 					(message: string) => setState((prev) => ({ ...prev, message })),
 					{ continueOnConflict },
 				);
+				if (stateRef.current.stashRef) {
+					await gitOps.popStash(stateRef.current.stashRef);
+				}
+				if (pushWithLease) {
+					await gitOps.pushWithLease(currentBranch);
+				}
 				setState((prev) => ({
 					...prev,
 					status: "success",
@@ -105,29 +155,61 @@ export default function App({
 				await handleError(error);
 			}
 		},
-		[continueOnConflict, gitOps, handleError],
+		[
+			continueOnConflict,
+			gitOps,
+			handleError,
+			dryRun,
+			yes,
+			autostash,
+			pushWithLease,
+		],
 	);
 
 	const startCherryPickRebase = useCallback(
 		async (currentBranch: string, target: string) => {
-			setState((prev) => ({
-				...prev,
-				status: "loading",
-				message: `Rebasing ${currentBranch} onto ${target} (cherry-pick)`,
-				currentBranch,
-				targetBranch: target,
-			}));
 			try {
 				await gitOps.fetchAll();
 				if (!(await gitOps.branchExists(target))) {
 					throw new Error(`Target branch '${target}' does not exist`);
 				}
-				const tempBranchName = await gitOps.setupCherryPick(target);
 				const mergeBase = await gitOps.getMergeBase(target, currentBranch);
 				const commits = await gitOps.getCommitsToCherryPick(
 					mergeBase,
 					currentBranch,
 				);
+
+				if (dryRun) {
+					setState((prev) => ({
+						...prev,
+						status: "success",
+						message: `DRY-RUN: Would apply ${commits.length} commits from ${mergeBase.slice(0, 7)}..${currentBranch} onto ${target} (cherry-pick).`,
+						currentBranch,
+						targetBranch: target,
+					}));
+					return;
+				}
+
+				if (!yes && stateRef.current.status !== "confirm") {
+					setState((prev) => ({
+						...prev,
+						status: "confirm",
+						message: `Proceed to apply ${commits.length} commits onto ${target}? Press Enter to continue, Esc to cancel.`,
+						currentBranch,
+						targetBranch: target,
+						pendingMode: "cherry",
+						commitsToPick: commits,
+						currentCommitIndex: 0,
+					}));
+					return;
+				}
+
+				if (autostash) {
+					const ref = await gitOps.startAutostash();
+					setState((prev) => ({ ...prev, stashRef: ref }));
+				}
+
+				const tempBranchName = await gitOps.setupCherryPick(target);
 				setState((prev) => ({
 					...prev,
 					status: "loading",
@@ -135,12 +217,14 @@ export default function App({
 					tempBranchName,
 					commitsToPick: commits,
 					currentCommitIndex: 0,
+					currentBranch,
+					targetBranch: target,
 				}));
 			} catch (error) {
 				await handleError(error);
 			}
 		},
-		[gitOps, handleError],
+		[gitOps, handleError, dryRun, yes, autostash],
 	);
 
 	const applyNextCommit = useCallback(async () => {
@@ -162,11 +246,18 @@ export default function App({
 		}
 
 		if (currentCommitIndex >= commitsToPick.length) {
-			// Finished
 			try {
 				setState((prev) => ({ ...prev, message: "Finishing rebase..." }));
-				await gitOps.finishCherryPick(currentBranch, tempBranchName);
+				await gitOps.finishCherryPick(currentBranch, tempBranchName, {
+					createBackup: !noBackup,
+				});
 				await gitOps.cleanupCherryPick(tempBranchName, currentBranch);
+				if (stateRef.current.stashRef) {
+					await gitOps.popStash(stateRef.current.stashRef);
+				}
+				if (pushWithLease) {
+					await gitOps.pushWithLease(currentBranch);
+				}
 				setState((prev) => ({
 					...prev,
 					status: "success",
@@ -187,11 +278,15 @@ export default function App({
 			return;
 		}
 
+		let subject = "";
+		try {
+			subject = await gitOps.getCommitSubject(commit);
+		} catch {}
 		setState((prev) => ({
 			...prev,
 			message: `Applying commit ${currentCommitIndex + 1}/${
 				commitsToPick.length
-			}: ${commit.slice(0, 7)}`,
+			}: ${commit.slice(0, 7)}${subject ? ` ${subject}` : ""}`,
 		}));
 
 		try {
@@ -272,7 +367,7 @@ export default function App({
 				await handleError(error, tempBranchName);
 			}
 		}
-	}, [gitOps, allowEmpty, onConflict, handleError]);
+	}, [gitOps, allowEmpty, onConflict, handleError, noBackup, pushWithLease]);
 
 	const resumeCherryPick = useCallback(async () => {
 		if (stateRef.current.status !== "paused_on_conflict") {
@@ -325,7 +420,8 @@ export default function App({
 		async function initialize() {
 			try {
 				const isClean = await gitOps.isWorkdirClean();
-				if (!isClean) {
+				const canProceed = isClean || autostash === true;
+				if (!canProceed) {
 					throw new Error(
 						"Uncommitted changes detected. Please commit or stash your changes before running agrb.",
 					);
@@ -364,6 +460,7 @@ export default function App({
 		performLinearRebase,
 		remoteTarget,
 		startCherryPickRebase,
+		autostash,
 	]);
 
 	const handleBranchSelect = (branch: string) => {
@@ -381,6 +478,30 @@ export default function App({
 			if (state.status === "paused_on_conflict" && key.return) {
 				resumeCherryPick();
 				return;
+			}
+
+			if (state.status === "confirm") {
+				if (key.return) {
+					const { pendingMode, currentBranch, targetBranch } = state;
+					if (currentBranch && targetBranch) {
+						if (pendingMode === "linear") {
+							performLinearRebase(currentBranch, targetBranch);
+							return;
+						}
+						if (pendingMode === "cherry") {
+							startCherryPickRebase(currentBranch, targetBranch);
+							return;
+						}
+					}
+				}
+				if (key.escape) {
+					setState((prev) => ({
+						...prev,
+						status: "error",
+						message: "Operation cancelled by user.",
+					}));
+					return;
+				}
 			}
 
 			if (key.escape) {
@@ -430,6 +551,9 @@ export default function App({
 				)}
 				{state.status === "paused_on_conflict" && (
 					<Text color="yellow">⏸ {sanitizedMessage}</Text>
+				)}
+				{state.status === "confirm" && (
+					<Text color="yellow">❓ {sanitizedMessage}</Text>
 				)}
 				{state.status === "success" && (
 					<Text color="green">✅ {sanitizedMessage}</Text>

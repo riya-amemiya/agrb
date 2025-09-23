@@ -9,6 +9,7 @@ import App from "./app.js";
 import { ConfigEditor } from "./components/ConfigEditor.js";
 import { ArgParser } from "./lib/arg-parser.js";
 import {
+	defaultConfig,
 	GLOBAL_CONFIG_PATH,
 	getConfig,
 	resetGlobalConfig,
@@ -38,6 +39,11 @@ Options
     --remote-target          Use remote branches for target selection
     --config <command>       Manage configuration. Commands: show, set, edit, reset
     --no-config              Disable loading of configuration files.
+    --dry-run                Show the plan without making any changes
+    -y, --yes                Skip confirmation prompts and proceed
+    --autostash              Stash changes before running and (on success) pop after
+    --push-with-lease        Push to origin with --force-with-lease after success
+    --no-backup              Do not create a backup ref before hard reset
     -v, --version            Show version
     -h, --help               Show help
 
@@ -75,6 +81,22 @@ const schema = {
 		type: "string",
 	},
 	noConfig: {
+		type: "boolean",
+	},
+	dryRun: {
+		type: "boolean",
+	},
+	yes: {
+		type: "boolean",
+		shortFlag: "y",
+	},
+	autostash: {
+		type: "boolean",
+	},
+	pushWithLease: {
+		type: "boolean",
+	},
+	noBackup: {
 		type: "boolean",
 	},
 } as const;
@@ -152,7 +174,9 @@ try {
 			return;
 		}
 
-		const { config } = await getConfig();
+		const { config } = cli.flags.noConfig
+			? { config: defaultConfig }
+			: await getConfig();
 
 		const props = {
 			targetBranch: cli.flags.target,
@@ -162,6 +186,11 @@ try {
 				cli.flags.continueOnConflict ?? config.continueOnConflict,
 			remoteTarget: cli.flags.remoteTarget ?? config.remoteTarget,
 			onConflict: cli.flags.onConflict ?? config.onConflict,
+			dryRun: cli.flags.dryRun ?? false,
+			yes: cli.flags.yes ?? false,
+			autostash: cli.flags.autostash ?? false,
+			pushWithLease: cli.flags.pushWithLease ?? false,
+			noBackup: cli.flags.noBackup ?? false,
 		};
 
 		render(
@@ -172,6 +201,11 @@ try {
 				continueOnConflict={props.continueOnConflict}
 				remoteTarget={props.remoteTarget}
 				onConflict={props.onConflict}
+				dryRun={props.dryRun}
+				yes={props.yes}
+				autostash={props.autostash}
+				pushWithLease={props.pushWithLease}
+				noBackup={props.noBackup}
 			/>,
 		);
 	})();

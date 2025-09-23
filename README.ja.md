@@ -30,7 +30,12 @@ agrb [options]
     - `ours`: `ours`戦略を用いてコンフリクトを自動解決します。
     - `theirs`: `theirs`戦略を用いてコンフリクトを自動解決します。
 - `--config <command>`: 設定の管理 (show, set, edit, reset)
-- `--no-config`: Disable loading of configuration files
+- `--no-config`: 設定ファイル読み込みを無効化（CLI引数は有効）
+- `--dry-run`: 実行せずに計画を出力
+- `-y, --yes`: 確認プロンプトをスキップ
+- `--autostash`: 実行前にstashし、成功後にpop
+- `--push-with-lease`: 成功後に`--force-with-lease`でpush
+- `--no-backup`: hard reset前のバックアップタグ作成を無効化
 - `-v, --version`: Show version
 - `-h, --help`: Show help
 
@@ -75,7 +80,9 @@ agrb --allow-empty
 
 デフォルト（cherry-pick）モードでは、ターゲットブランチと現在のブランチの`merge-base`から現在ブランチまでの非マージコミットを順に適用します。空コミットやコンフリクトは自動でスキップされます。`--allow-empty`で空コミットを意図的に含めることも可能です。完了後は一時ブランチの内容を現在ブランチへ`reset --hard`で反映します。
 
-線形（`--linear`）モードでは、`git rebase origin/<target>`を実行します。`--continue-on-conflict`指定時はコンフリクト検出後に自動解決（`-X ours`）を試み、`git add . && git rebase --continue`を行います。
+線形（`--linear`）モードでは、`git rebase origin/<target>`を実行します。`--continue-on-conflict`指定時はコンフリクト検出後に自動解決（`-X ours`）を試み、ステージングして`git rebase --continue`を行います。継続に失敗した場合は`rebase --abort`して明示的なエラーを表示します。
+
+いつでもESCで中断できます。`--on-conflict pause`のときは別ターミナルで解決してからEnterで続行します。
 
 ## 開発
 

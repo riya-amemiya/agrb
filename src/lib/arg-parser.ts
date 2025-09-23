@@ -104,6 +104,9 @@ export class ArgParser<T extends FlagsSchema> {
 						flags[longFlag] = value as Flags<T>[keyof T];
 					}
 				} else {
+					if (argName.startsWith("-")) {
+						throw new Error(`Unknown option: ${argName}`);
+					}
 					input.push(arg);
 				}
 			} else {
