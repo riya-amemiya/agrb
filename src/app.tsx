@@ -433,9 +433,9 @@ export default function App({
 					const branches = remoteTarget
 						? await gitOps.getAllBranches()
 						: await gitOps.getLocalBranches();
-					const filteredBranches = branches.filter((branch) => {
-						return branch !== currentBranch;
-					});
+					const filteredBranches = branches.filter(
+						(branch) => branch !== currentBranch,
+					);
 					setState((prev) => ({
 						...prev,
 						status: "selecting",
@@ -482,21 +482,16 @@ export default function App({
 
 			if (state.status === "confirm") {
 				if (key.return) {
-					if (
-						state.pendingMode === "linear" &&
-						state.currentBranch &&
-						state.targetBranch
-					) {
-						performLinearRebase(state.currentBranch, state.targetBranch);
-						return;
-					}
-					if (
-						state.pendingMode === "cherry" &&
-						state.currentBranch &&
-						state.targetBranch
-					) {
-						startCherryPickRebase(state.currentBranch, state.targetBranch);
-						return;
+					const { pendingMode, currentBranch, targetBranch } = state;
+					if (currentBranch && targetBranch) {
+						if (pendingMode === "linear") {
+							performLinearRebase(currentBranch, targetBranch);
+							return;
+						}
+						if (pendingMode === "cherry") {
+							startCherryPickRebase(currentBranch, targetBranch);
+							return;
+						}
 					}
 				}
 				if (key.escape) {

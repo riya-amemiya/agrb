@@ -165,13 +165,19 @@ export class GitOperations {
 		if (options?.createBackup) {
 			try {
 				const currentSha = (await this.git.revparse([currentBranch])).trim();
-				const safeBranch = currentBranch.replaceAll("/", "-");
+				const safeBranch = currentBranch.replace(/\//g, "-");
 				const tagName = `agrb-backup-${safeBranch}-${Date.now()}`;
 				await this.git.addAnnotatedTag(
 					tagName,
 					`Backup before agrb reset: ${currentBranch} @ ${currentSha}`,
 				);
-			} catch {}
+			} catch (error) {
+				throw new Error(
+					`Failed to create backup tag: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				);
+			}
 		}
 		await this.git.raw(["reset", "--hard", tempBranchName]);
 	}
@@ -261,27 +267,21 @@ export class GitOperations {
 
 	async startAutostash(): Promise<string | null> {
 		const label = `agrb-${process.pid}`;
-		try {
-			await this.git.raw(["stash", "push", "-u", "-m", label]);
-			const list = await this.git.raw(["stash", "list", "--format=%gd %gs"]);
-			const line = list
-				.split("\n")
-				.map((l) => l.trim())
-				.find((l) => l.includes(label));
-			if (!line) {
-				return null;
-			}
-			const ref = line.split(" ")[0];
-			return ref || null;
-		} catch {
+		await this.git.raw(["stash", "push", "-u", "-m", label]);
+		const list = await this.git.raw(["stash", "list", "--format=%gd %gs"]);
+		const line = list
+			.split("\n")
+			.map((l) => l.trim())
+			.find((l) => l.includes(label));
+		if (!line) {
 			return null;
 		}
+		const ref = line.split(" ")[0];
+		return ref || null;
 	}
 
 	async popStash(stashRef: string): Promise<void> {
-		try {
-			await this.git.raw(["stash", "pop", stashRef]);
-		} catch {}
+		await this.git.raw(["stash", "pop", stashRef]);
 	}
 
 	async pushWithLease(branch: string): Promise<void> {
