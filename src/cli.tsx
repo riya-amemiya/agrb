@@ -186,11 +186,11 @@ try {
 				cli.flags.continueOnConflict ?? config.continueOnConflict,
 			remoteTarget: cli.flags.remoteTarget ?? config.remoteTarget,
 			onConflict: cli.flags.onConflict ?? config.onConflict,
-			dryRun: cli.flags.dryRun ?? false,
-			yes: cli.flags.yes ?? false,
-			autostash: cli.flags.autostash ?? false,
-			pushWithLease: cli.flags.pushWithLease ?? false,
-			noBackup: cli.flags.noBackup ?? false,
+			dryRun: cli.flags.dryRun ?? config.dryRun,
+			yes: cli.flags.yes ?? config.yes,
+			autostash: cli.flags.autostash ?? config.autostash,
+			pushWithLease: cli.flags.pushWithLease ?? config.pushWithLease,
+			noBackup: cli.flags.noBackup ?? config.noBackup,
 		};
 
 		render(
