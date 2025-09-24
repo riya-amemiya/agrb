@@ -87,6 +87,12 @@ jobs:
               if ! git cherry-pick -x "$c"; then
                 echo "::warning::Cherry-pick had conflicts on $c. Committing with conflict markers."
                 git add -A
+                if git diff --cached --quiet; then
+                  echo "Empty commit after conflict resolution. Skipping."
+                  git cherry-pick --abort
+                  continue
+                fi
+
                 if ! git cherry-pick --continue; then
                   git commit -m "chore: sync ${c} to ${target} (with conflicts)"
                 fi
