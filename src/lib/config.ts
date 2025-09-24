@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
 	boolean,
+	type InferOutput,
 	number,
 	object,
 	optional,
@@ -15,7 +16,6 @@ const CONFIG_DIR_NAME = "agrb";
 const LOCAL_CONFIG_FILE_NAME = ".agrbrc";
 
 const onConflictValues = ["skip", "ours", "theirs", "pause"] as const;
-type OnConflictStrategy = (typeof onConflictValues)[number];
 
 const configSchema = object({
 	allowEmpty: optional(boolean()),
@@ -23,8 +23,15 @@ const configSchema = object({
 	continueOnConflict: optional(boolean()),
 	remoteTarget: optional(boolean()),
 	onConflict: optional(picklist(onConflictValues)),
+	dryRun: optional(boolean()),
+	yes: optional(boolean()),
+	autostash: optional(boolean()),
+	pushWithLease: optional(boolean()),
+	noBackup: optional(boolean()),
 	schemaVersion: optional(number()),
 });
+
+export type AgreConfig = InferOutput<typeof configSchema>;
 
 export const configKeys = [
 	"allowEmpty",
@@ -32,17 +39,13 @@ export const configKeys = [
 	"continueOnConflict",
 	"remoteTarget",
 	"onConflict",
+	"dryRun",
+	"yes",
+	"autostash",
+	"pushWithLease",
+	"noBackup",
 	"schemaVersion",
 ] as const;
-
-export interface AgreConfig {
-	allowEmpty?: boolean;
-	linear?: boolean;
-	continueOnConflict?: boolean;
-	remoteTarget?: boolean;
-	onConflict?: OnConflictStrategy;
-	schemaVersion?: number;
-}
 
 export interface ConfigResult {
 	config: AgreConfig;
@@ -55,6 +58,11 @@ export const defaultConfig: Omit<AgreConfig, "schemaVersion"> = {
 	continueOnConflict: false,
 	remoteTarget: false,
 	onConflict: "pause",
+	dryRun: false,
+	yes: false,
+	autostash: false,
+	pushWithLease: false,
+	noBackup: false,
 };
 
 const validateConfig = (config: unknown): AgreConfig => {
@@ -77,7 +85,7 @@ const validateConfig = (config: unknown): AgreConfig => {
 		});
 		throw new Error(`Configuration errors:\n- ${errors.join("\n- ")}`);
 	}
-	return result.output as AgreConfig;
+	return result.output;
 };
 
 const readConfigFile = async (filePath: string): Promise<AgreConfig | null> => {
