@@ -91,8 +91,6 @@ export class GitOperations {
 		}
 	}
 
-	// --- Cherry-pick rebase methods ---
-
 	async setupCherryPick(targetBranch: string): Promise<string> {
 		if (!isValidBranchName(targetBranch)) {
 			throw new Error(`Invalid branch name: ${targetBranch}`);
@@ -161,8 +159,26 @@ export class GitOperations {
 	async finishCherryPick(
 		currentBranch: string,
 		tempBranchName: string,
+		options?: { createBackup?: boolean },
 	): Promise<void> {
 		await this.git.checkout(currentBranch);
+		if (options?.createBackup) {
+			try {
+				const currentSha = (await this.git.revparse([currentBranch])).trim();
+				const safeBranch = currentBranch.replace(/\//g, "-");
+				const tagName = `agrb-backup-${safeBranch}-${Date.now()}`;
+				await this.git.addAnnotatedTag(
+					tagName,
+					`Backup before agrb reset: ${currentBranch} @ ${currentSha}`,
+				);
+			} catch (error) {
+				throw new Error(
+					`Failed to create backup tag: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				);
+			}
+		}
 		await this.git.raw(["reset", "--hard", tempBranchName]);
 	}
 
@@ -178,8 +194,6 @@ export class GitOperations {
 			await this.git.branch(["-D", tempBranchName]);
 		} catch {}
 	}
-
-	// --- Linear rebase method ---
 
 	async performLinearRebase(
 		currentBranch: string,
@@ -217,6 +231,7 @@ export class GitOperations {
 					progressCallback?.(
 						"Conflicts detected, auto-resolving and continuing...",
 					);
+					await this.git.checkout(["--ours", "."]);
 					await this.git.add(".");
 					await this.git.raw(["rebase", "--continue"]);
 					progressCallback?.(
@@ -243,5 +258,33 @@ export class GitOperations {
 				);
 			}
 		}
+	}
+
+	async getCommitSubject(sha: string): Promise<string> {
+		const out = await this.git.raw(["show", "-s", "--format=%s", sha]);
+		return out.trim();
+	}
+
+	async startAutostash(): Promise<string | null> {
+		const label = `agrb-${process.pid}`;
+		await this.git.raw(["stash", "push", "-u", "-m", label]);
+		const list = await this.git.raw(["stash", "list", "--format=%gd %gs"]);
+		const line = list
+			.split("\n")
+			.map((l) => l.trim())
+			.find((l) => l.includes(label));
+		if (!line) {
+			return null;
+		}
+		const ref = line.split(" ")[0];
+		return ref || null;
+	}
+
+	async popStash(stashRef: string): Promise<void> {
+		await this.git.raw(["stash", "pop", stashRef]);
+	}
+
+	async pushWithLease(branch: string): Promise<void> {
+		await this.git.push(["-u", "origin", branch, "--force-with-lease"]);
 	}
 }
