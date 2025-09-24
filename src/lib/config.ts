@@ -23,6 +23,11 @@ const configSchema = object({
 	continueOnConflict: optional(boolean()),
 	remoteTarget: optional(boolean()),
 	onConflict: optional(picklist(onConflictValues)),
+	dryRun: optional(boolean()),
+	yes: optional(boolean()),
+	autostash: optional(boolean()),
+	pushWithLease: optional(boolean()),
+	noBackup: optional(boolean()),
 	schemaVersion: optional(number()),
 });
 
@@ -32,6 +37,11 @@ export const configKeys = [
 	"continueOnConflict",
 	"remoteTarget",
 	"onConflict",
+	"dryRun",
+	"yes",
+	"autostash",
+	"pushWithLease",
+	"noBackup",
 	"schemaVersion",
 ] as const;
 
@@ -41,6 +51,11 @@ export interface AgreConfig {
 	continueOnConflict?: boolean;
 	remoteTarget?: boolean;
 	onConflict?: OnConflictStrategy;
+	dryRun?: boolean;
+	yes?: boolean;
+	autostash?: boolean;
+	pushWithLease?: boolean;
+	noBackup?: boolean;
 	schemaVersion?: number;
 }
 
@@ -55,6 +70,11 @@ export const defaultConfig: Omit<AgreConfig, "schemaVersion"> = {
 	continueOnConflict: false,
 	remoteTarget: false,
 	onConflict: "pause",
+	dryRun: false,
+	yes: false,
+	autostash: false,
+	pushWithLease: false,
+	noBackup: false,
 };
 
 const validateConfig = (config: unknown): AgreConfig => {
