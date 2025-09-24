@@ -39,6 +39,33 @@ Options:
     - `skip`: automatically skip the conflicting commit.
     - `ours`: automatically resolve conflict using 'ours' strategy.
     - `theirs`: automatically resolve conflict using 'theirs' strategy.
+- `--config <command>`: Manage configuration (show, set, edit, reset)
+- `--no-config`: Disable loading of configuration files (CLI flags still apply)
+- `--dry-run`: Print the plan without making changes
+- `-y, --yes`: Skip confirmation prompts
+- `--autostash`: Stash changes before running; pop after success
+- `--push-with-lease`: After success, push with `--force-with-lease`
+- `--no-backup`: Do not create a backup tag before hard reset
+- `-v, --version`: Show version
+- `-h, --help`: Show help
+
+### Configuration
+
+You can configure `agrb` via a configuration file. The configuration is resolved in the following order of precedence:
+
+1. Command-line flags
+2. Local configuration (`.agrbrc` in the project root)
+3. Global configuration (`~/.config/agrb/config.json`)
+4. Default values
+
+Use the `--no-config` flag to disable loading of configuration files.
+
+#### Managing Configuration
+
+- `agrb --config show`: Display the current effective configuration.
+- `agrb --config set`: Start an interactive editor to modify the global configuration.
+- `agrb --config edit`: Open the global configuration file in your default editor (`$EDITOR`).
+- `agrb --config reset`: Reset the global configuration to its default values.
 
 ### Examples
 
@@ -63,7 +90,9 @@ agrb --allow-empty
 
 In the default cherry-pick mode, non-merge commits between `merge-base(<target>, <current>)` and the current branch are applied onto a temporary branch created from `<target>`. Empty commits or conflicts are automatically skipped. You can intentionally include empty commits with `--allow-empty`. On success, the current branch is hard-reset to the temp branch.
 
-In linear mode (`--linear`), `git rebase origin/<target>` is executed. With `--continue-on-conflict`, the command tries `-X ours`, stages changes, and runs `git rebase --continue`.
+In linear mode (`--linear`), `git rebase origin/<target>` is executed. With `--continue-on-conflict`, the command tries `-X ours`, stages changes, and runs `git rebase --continue`. If continuing fails, the rebase is aborted and an error is shown.
+
+Press ESC at any time to cancel. In cherry-pick conflicts with `--on-conflict pause`, resolve in another terminal and press Enter to continue.
 
 ## Development
 

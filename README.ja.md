@@ -29,6 +29,33 @@ agrb [options]
     - `skip`: コンフリクトしたコミットを自動的にスキップします。
     - `ours`: `ours`戦略を用いてコンフリクトを自動解決します。
     - `theirs`: `theirs`戦略を用いてコンフリクトを自動解決します。
+- `--config <command>`: 設定の管理 (show, set, edit, reset)
+- `--no-config`: 設定ファイル読み込みを無効化（CLI引数は有効）
+- `--dry-run`: 実行せずに計画を出力
+- `-y, --yes`: 確認プロンプトをスキップ
+- `--autostash`: 実行前にstashし、成功後にpop
+- `--push-with-lease`: 成功後に`--force-with-lease`でpush
+- `--no-backup`: hard reset前のバックアップタグ作成を無効化
+- `-v, --version`: Show version
+- `-h, --help`: Show help
+
+### 設定ファイル
+
+設定ファイルで`agrb`の挙動をカスタマイズできます。設定は以下の優先順位で解決されます。
+
+1. コマンドラインフラグ
+2. ローカル設定 (`プロジェクトルート/.agrbrc`)
+3. グローバル設定 (`~/.config/agrb/config.json`)
+4. デフォルト値
+
+`--no-config` フラグを使用すると、設定ファイルの読み込みを無効化できます。
+
+#### 設定の管理
+
+- `agrb --config show`: 現在の有効な設定を表示します。
+- `agrb --config set`: 対話的なエディタを起動し、グローバル設定を変更します。
+- `agrb --config edit`: デフォルトエディタ (`$EDITOR`) でグローバル設定ファイルを開きます。
+- `agrb --config reset`: グローバル設定をデフォルト値にリセットします。
 
 ### 例
 
@@ -53,7 +80,9 @@ agrb --allow-empty
 
 デフォルト（cherry-pick）モードでは、ターゲットブランチと現在のブランチの`merge-base`から現在ブランチまでの非マージコミットを順に適用します。空コミットやコンフリクトは自動でスキップされます。`--allow-empty`で空コミットを意図的に含めることも可能です。完了後は一時ブランチの内容を現在ブランチへ`reset --hard`で反映します。
 
-線形（`--linear`）モードでは、`git rebase origin/<target>`を実行します。`--continue-on-conflict`指定時はコンフリクト検出後に自動解決（`-X ours`）を試み、`git add . && git rebase --continue`を行います。
+線形（`--linear`）モードでは、`git rebase origin/<target>`を実行します。`--continue-on-conflict`指定時はコンフリクト検出後に自動解決（`-X ours`）を試み、ステージングして`git rebase --continue`を行います。継続に失敗した場合は`rebase --abort`して明示的なエラーを表示します。
+
+いつでもESCで中断できます。`--on-conflict pause`のときは別ターミナルで解決してからEnterで続行します。
 
 ## 開発
 
