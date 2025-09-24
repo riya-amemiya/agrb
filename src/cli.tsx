@@ -178,29 +178,36 @@ try {
 			? { config: defaultConfig }
 			: await getConfig();
 
-		const configurableFlags = [
-			"allowEmpty",
-			"linear",
-			"continueOnConflict",
-			"remoteTarget",
-			"onConflict",
-			"dryRun",
-			"yes",
-			"autostash",
-			"pushWithLease",
-			"noBackup",
-		] as const;
-
-		const flagProps = Object.fromEntries(
-			configurableFlags.map((flag) => [flag, cli.flags[flag] ?? config[flag]]),
-		);
-
 		const props = {
 			targetBranch: cli.flags.target,
-			...flagProps,
+			allowEmpty: cli.flags.allowEmpty ?? config.allowEmpty,
+			linear: cli.flags.linear ?? config.linear,
+			continueOnConflict:
+				cli.flags.continueOnConflict ?? config.continueOnConflict,
+			remoteTarget: cli.flags.remoteTarget ?? config.remoteTarget,
+			onConflict: cli.flags.onConflict ?? config.onConflict,
+			dryRun: cli.flags.dryRun ?? false,
+			yes: cli.flags.yes ?? false,
+			autostash: cli.flags.autostash ?? false,
+			pushWithLease: cli.flags.pushWithLease ?? false,
+			noBackup: cli.flags.noBackup ?? false,
 		};
 
-		render(<App {...props} />);
+		render(
+			<App
+				targetBranch={props.targetBranch}
+				allowEmpty={props.allowEmpty}
+				linear={props.linear}
+				continueOnConflict={props.continueOnConflict}
+				remoteTarget={props.remoteTarget}
+				onConflict={props.onConflict}
+				dryRun={props.dryRun}
+				yes={props.yes}
+				autostash={props.autostash}
+				pushWithLease={props.pushWithLease}
+				noBackup={props.noBackup}
+			/>,
+		);
 	})();
 } catch (error) {
 	if (error instanceof Error) {
