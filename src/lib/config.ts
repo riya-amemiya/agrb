@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
 	boolean,
+	type InferOutput,
 	number,
 	object,
 	optional,
@@ -15,7 +16,6 @@ const CONFIG_DIR_NAME = "agrb";
 const LOCAL_CONFIG_FILE_NAME = ".agrbrc";
 
 const onConflictValues = ["skip", "ours", "theirs", "pause"] as const;
-type OnConflictStrategy = (typeof onConflictValues)[number];
 
 const configSchema = object({
 	allowEmpty: optional(boolean()),
@@ -31,6 +31,8 @@ const configSchema = object({
 	schemaVersion: optional(number()),
 });
 
+export type AgreConfig = InferOutput<typeof configSchema>;
+
 export const configKeys = [
 	"allowEmpty",
 	"linear",
@@ -44,20 +46,6 @@ export const configKeys = [
 	"noBackup",
 	"schemaVersion",
 ] as const;
-
-export interface AgreConfig {
-	allowEmpty?: boolean;
-	linear?: boolean;
-	continueOnConflict?: boolean;
-	remoteTarget?: boolean;
-	onConflict?: OnConflictStrategy;
-	dryRun?: boolean;
-	yes?: boolean;
-	autostash?: boolean;
-	pushWithLease?: boolean;
-	noBackup?: boolean;
-	schemaVersion?: number;
-}
 
 export interface ConfigResult {
 	config: AgreConfig;
@@ -97,7 +85,7 @@ const validateConfig = (config: unknown): AgreConfig => {
 		});
 		throw new Error(`Configuration errors:\n- ${errors.join("\n- ")}`);
 	}
-	return result.output as AgreConfig;
+	return result.output;
 };
 
 const readConfigFile = async (filePath: string): Promise<AgreConfig | null> => {
