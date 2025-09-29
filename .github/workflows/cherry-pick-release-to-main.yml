@@ -1,0 +1,110 @@
+name: Sync release commits forward
+
+'on':
+  push:
+    branches:
+      - 'release/*.*.x'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-commits-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  cherry-pick:
+    name: Sync commits to branches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ startsWith(github.event.head_commit.message, '[sync]') == false && contains(github.event.head_commit.message, 'npm version') == false && contains(github.event.head_commit.message, 'version bump') == false && !startsWith(github.event.head_commit.message, '1.') && !startsWith(github.event.head_commit.message, '2.') && !startsWith(github.event.head_commit.message, '3.') && !startsWith(github.event.head_commit.message, '4.') && !startsWith(github.event.head_commit.message, '5.') && !startsWith(github.event.head_commit.message, '6.') && !startsWith(github.event.head_commit.message, '7.') && !startsWith(github.event.head_commit.message, '8.') && !startsWith(github.event.head_commit.message, '9.') && !startsWith(github.event.head_commit.message, '0.') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Create per-commit PRs to main and forward release branches
+        env:
+          RELEASE_BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin --prune --tags
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # Ensure target branches exist
+          if ! git show-ref --verify --quiet "refs/remotes/origin/${RELEASE_BRANCH}"; then
+            echo "Release branch not found: ${RELEASE_BRANCH}"
+            exit 1
+          fi
+          git fetch origin main:refs/remotes/origin/main
+
+          # Build target list: main + forward release branches (greater than source version)
+          TARGETS=(main)
+          if [[ "${RELEASE_BRANCH}" =~ ^release/([0-9]+)\.([0-9]+)\.x$ ]]; then
+            SRC_MAJ="${BASH_REMATCH[1]}"
+            SRC_MIN="${BASH_REMATCH[2]}"
+            mapfile -t ALL_RELEASES < <(git ls-remote --heads origin 'refs/heads/release/*.*.x' | awk '{print $2}' | sed 's#refs/heads/##')
+            for rb in "${ALL_RELEASES[@]}"; do
+              [[ "$rb" == "${RELEASE_BRANCH}" ]] && continue
+              if [[ "$rb" =~ ^release/([0-9]+)\.([0-9]+)\.x$ ]]; then
+                maj="${BASH_REMATCH[1]}"; min="${BASH_REMATCH[2]}"
+                if (( maj > SRC_MAJ )) || { (( maj == SRC_MAJ )) && (( min > SRC_MIN )); }; then
+                  TARGETS+=("$rb")
+                fi
+              fi
+            done
+          else
+            echo "::warning::Release branch '${RELEASE_BRANCH}' doesn't match release/<major>.<minor>.x; syncing only to main."
+          fi
+
+          echo "Targets: ${TARGETS[*]}"
+
+          for target in "${TARGETS[@]}"; do
+            echo "Finding commits to apply to ${target} from ${RELEASE_BRANCH}"
+            git fetch origin "${target}:refs/remotes/origin/${target}" || true
+            # Commits present in source but not in target (compare by patch-id), oldest first
+            mapfile -t COMMITS < <(git rev-list --reverse --cherry-pick --right-only --no-merges "origin/${target}...origin/${RELEASE_BRANCH}")
+            echo "Commits to cherry-pick for ${target}: ${#COMMITS[@]}"
+            if [ "${#COMMITS[@]}" -eq 0 ]; then
+              continue
+            fi
+
+            for c in "${COMMITS[@]}"; do
+              shortsha="$(git rev-parse --short "$c")"
+              sanitized_target="$(echo "${target}" | sed -E 's#[^A-Za-z0-9._-]+#-#g')"
+              wbranch="sync/${shortsha}-to-${sanitized_target}"
+              echo "Processing $c on branch ${wbranch} -> base ${target}"
+
+              # Fresh branch from target for each commit
+              git checkout -B "${wbranch}" "origin/${target}"
+              if ! git cherry-pick -x "$c"; then
+                echo "::warning::Cherry-pick had conflicts on $c. Committing with conflict markers."
+                git add -A
+                if git diff --cached --quiet; then
+                  echo "Empty commit after conflict resolution. Skipping."
+                  git cherry-pick --abort
+                  continue
+                fi
+
+                if ! git cherry-pick --continue; then
+                  git commit -m "chore: sync ${c} to ${target} (with conflicts)"
+                fi
+              fi
+
+              git push --force-with-lease origin "${wbranch}"
+
+              title="sync ${shortsha} to ${target}"
+              commit_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/commit/${c}"
+              body="Auto PR to sync commit ${c} from '${RELEASE_BRANCH}' into '${target}'.\n\nCommit: ${commit_url}\n\nConflicts, if any, are intentionally kept for PR-side resolution."
+              gh pr create --base "${target}" --head "${wbranch}" --title "${title}" --body "${body}" || echo "PR may already exist for ${wbranch}; skipping"
+            done
+          done
+
+

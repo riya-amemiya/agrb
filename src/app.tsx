@@ -169,6 +169,26 @@ export default function App({
 	const startCherryPickRebase = useCallback(
 		async (currentBranch: string, target: string) => {
 			try {
+				if (!yes && stateRef.current.status !== "confirm") {
+					setState((prev) => ({
+						...prev,
+						status: "confirm",
+						message: `Proceed to rebase ${currentBranch} onto ${target} (cherry-pick)? Press Enter to continue, Esc to cancel.`,
+						currentBranch,
+						targetBranch: target,
+						pendingMode: "cherry",
+					}));
+					return;
+				}
+
+				setState((prev) => ({
+					...prev,
+					status: "loading",
+					message: "Analyzing commits...",
+					currentBranch,
+					targetBranch: target,
+				}));
+
 				await gitOps.fetchAll();
 				if (!(await gitOps.branchExists(target))) {
 					throw new Error(`Target branch '${target}' does not exist`);
@@ -186,20 +206,6 @@ export default function App({
 						message: `DRY-RUN: Would apply ${commits.length} commits from ${mergeBase.slice(0, 7)}..${currentBranch} onto ${target} (cherry-pick).`,
 						currentBranch,
 						targetBranch: target,
-					}));
-					return;
-				}
-
-				if (!yes && stateRef.current.status !== "confirm") {
-					setState((prev) => ({
-						...prev,
-						status: "confirm",
-						message: `Proceed to apply ${commits.length} commits onto ${target}? Press Enter to continue, Esc to cancel.`,
-						currentBranch,
-						targetBranch: target,
-						pendingMode: "cherry",
-						commitsToPick: commits,
-						currentCommitIndex: 0,
 					}));
 					return;
 				}
