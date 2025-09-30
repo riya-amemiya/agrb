@@ -1,18 +1,24 @@
 #!/usr/bin/env node
-import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import chalk from "chalk";
+import {
+	ConfigEditor as AgToolkitConfigEditor,
+	ArgParser,
+	type ConfigItem,
+	handleConfigCommand,
+	resetGlobalConfig,
+	writeGlobalConfig,
+} from "ag-toolkit";
 import { render } from "ink";
 import App from "./app.js";
-import { ConfigEditor } from "./components/ConfigEditor.js";
-import { ArgParser } from "./lib/arg-parser.js";
 import {
+	type AgrbConfig,
+	CONFIG_DIR_NAME,
+	CONFIG_FILE_NAME,
 	defaultConfig,
 	GLOBAL_CONFIG_PATH,
 	getConfig,
-	resetGlobalConfig,
 } from "./lib/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -101,6 +107,37 @@ const schema = {
 	},
 } as const;
 
+const agrbConfigItems: ConfigItem<AgrbConfig>[] = [
+	{ key: "allowEmpty", type: "boolean" },
+	{ key: "linear", type: "boolean" },
+	{ key: "continueOnConflict", type: "boolean" },
+	{ key: "remoteTarget", type: "boolean" },
+	{
+		key: "onConflict",
+		type: "select",
+		options: ["skip", "ours", "theirs", "pause"],
+	},
+	{ key: "dryRun", type: "boolean" },
+	{ key: "yes", type: "boolean" },
+	{ key: "autostash", type: "boolean" },
+	{ key: "pushWithLease", type: "boolean" },
+	{ key: "noBackup", type: "boolean" },
+];
+
+const AgrbConfigEditor = () => {
+	return (
+		<AgToolkitConfigEditor
+			toolName="agrb"
+			configItems={agrbConfigItems}
+			defaultConfig={defaultConfig}
+			loadConfig={async () => (await getConfig()).config}
+			writeConfig={(config) =>
+				writeGlobalConfig(config, CONFIG_DIR_NAME, CONFIG_FILE_NAME)
+			}
+		/>
+	);
+};
+
 try {
 	const parser = new ArgParser({
 		schema,
@@ -122,55 +159,13 @@ try {
 
 	(async () => {
 		if (cli.flags.config) {
-			const command = cli.flags.config;
-			switch (command) {
-				case "show": {
-					const { config, sources } = await getConfig();
-					console.log(chalk.bold("Current effective configuration:"));
-					const sourceColors = {
-						default: chalk.gray,
-						global: chalk.blue,
-						local: chalk.green,
-					};
-					for (const key in config) {
-						const k = key as keyof typeof config;
-						const source = sources[k] || "default";
-						const color = sourceColors[source];
-						console.log(
-							`  ${chalk.cyan(k)}: ${chalk.yellow(
-								String(config[k]),
-							)} ${color(`(${source})`)}`,
-						);
-					}
-					break;
-				}
-				case "edit": {
-					// biome-ignore lint/complexity/useLiteralKeys: ignore
-					const editor = process.env["EDITOR"] || "vim";
-					try {
-						execSync(`${editor} ${GLOBAL_CONFIG_PATH}`, { stdio: "inherit" });
-					} catch {
-						console.error(`Failed to open editor: ${editor}`);
-						process.exit(1);
-					}
-					break;
-				}
-				case "reset": {
-					await resetGlobalConfig();
-					console.log(
-						`✅ Configuration reset to default: ${GLOBAL_CONFIG_PATH}`,
-					);
-					break;
-				}
-				case "set": {
-					render(<ConfigEditor />);
-					return;
-				}
-				default:
-					console.error(`Unknown config command: ${command}`);
-					console.log("Available commands: show, edit, reset, set");
-					process.exit(1);
-			}
+			await handleConfigCommand(cli.flags.config, {
+				getConfig,
+				getGlobalConfigPath: () => GLOBAL_CONFIG_PATH,
+				resetGlobalConfig: () =>
+					resetGlobalConfig(defaultConfig, CONFIG_DIR_NAME, CONFIG_FILE_NAME),
+				ConfigEditorComponent: AgrbConfigEditor,
+			});
 			return;
 		}
 
