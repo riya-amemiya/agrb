@@ -86,7 +86,7 @@ export const validateConfig = (config: unknown): AgrbConfig => {
 	return result.output;
 };
 
-export const getConfig = (cwd: string = process.cwd()) => {
+export const getConfig = async (cwd: string = process.cwd()) => {
 	return loadConfig(
 		{
 			toolName: CONFIG_DIR_NAME,
