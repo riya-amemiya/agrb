@@ -36,6 +36,13 @@ jobs:
       - name: Build project
         run: bun run build
 
+      - name: Create release branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh api -X POST repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/heads/release/${VERSION%.*}.x -f sha=${{ github.sha }}
+
       - name: Update npm to the latest version
         run: npm install -g npm@latest
 
