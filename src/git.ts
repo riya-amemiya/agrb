@@ -3,6 +3,12 @@ import { type SimpleGit, type SimpleGitOptions, simpleGit } from "simple-git";
 export class GitOperations {
 	private git: SimpleGit;
 
+	private stripOriginPrefix(branch: string): string {
+		return branch.startsWith("origin/")
+			? branch.replace("origin/", "")
+			: branch;
+	}
+
 	constructor(workingDir?: string) {
 		const options: SimpleGitOptions = {
 			baseDir: workingDir || process.cwd(),
@@ -50,15 +56,16 @@ export class GitOperations {
 	}
 
 	async branchExists(branch: string): Promise<boolean> {
-		if (!isValidBranchName(branch)) {
-			throw new Error(`Invalid branch name: ${branch}`);
+		const branchName = this.stripOriginPrefix(branch);
+		if (!isValidBranchName(branchName)) {
+			throw new Error(`Invalid branch name: ${branchName}`);
 		}
 		try {
 			await this.git.raw([
 				"show-ref",
 				"--verify",
 				"--quiet",
-				`refs/remotes/origin/${branch}`,
+				`refs/remotes/origin/${branchName}`,
 			]);
 			return true;
 		} catch {
@@ -67,7 +74,7 @@ export class GitOperations {
 					"show-ref",
 					"--verify",
 					"--quiet",
-					`refs/heads/${branch}`,
+					`refs/heads/${branchName}`,
 				]);
 				return true;
 			} catch {
@@ -77,6 +84,9 @@ export class GitOperations {
 	}
 
 	private async resolveBranchRef(branch: string): Promise<string> {
+		if (branch.startsWith("origin/")) {
+			return branch;
+		}
 		try {
 			await this.git.raw([
 				"show-ref",
@@ -91,8 +101,9 @@ export class GitOperations {
 	}
 
 	async setupCherryPick(targetBranch: string): Promise<string> {
-		if (!isValidBranchName(targetBranch)) {
-			throw new Error(`Invalid branch name: ${targetBranch}`);
+		const branchName = this.stripOriginPrefix(targetBranch);
+		if (!isValidBranchName(branchName)) {
+			throw new Error(`Invalid branch name: ${branchName}`);
 		}
 		const tempBranchName = `temp-rebase-${process.pid}`;
 		const checkoutTarget = await this.resolveBranchRef(targetBranch);
@@ -101,11 +112,13 @@ export class GitOperations {
 	}
 
 	async getMergeBase(branch1: string, branch2: string): Promise<string> {
-		if (!isValidBranchName(branch1)) {
-			throw new Error(`Invalid branch name: ${branch1}`);
+		const branchName1 = this.stripOriginPrefix(branch1);
+		const branchName2 = this.stripOriginPrefix(branch2);
+		if (!isValidBranchName(branchName1)) {
+			throw new Error(`Invalid branch name: ${branchName1}`);
 		}
-		if (!isValidBranchName(branch2)) {
-			throw new Error(`Invalid branch name: ${branch2}`);
+		if (!isValidBranchName(branchName2)) {
+			throw new Error(`Invalid branch name: ${branchName2}`);
 		}
 		const baseBranch = await this.resolveBranchRef(branch1);
 		const result = await this.git.raw(["merge-base", baseBranch, branch2]);
@@ -200,8 +213,9 @@ export class GitOperations {
 		progressCallback?: (message: string) => void,
 		options?: { continueOnConflict?: boolean },
 	): Promise<void> {
-		if (!isValidBranchName(targetBranch)) {
-			throw new Error(`Invalid branch name: ${targetBranch}`);
+		const branchName = this.stripOriginPrefix(targetBranch);
+		if (!isValidBranchName(branchName)) {
+			throw new Error(`Invalid branch name: ${branchName}`);
 		}
 		try {
 			progressCallback?.("Fetching all branches...");

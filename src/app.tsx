@@ -448,10 +448,15 @@ export default function App({
 						message: "Select target branch (type to filter):",
 						availableBranches: filteredBranches,
 					}));
-				} else if (linear) {
-					await performLinearRebase(currentBranch, initialTargetBranch);
 				} else {
-					await startCherryPickRebase(currentBranch, initialTargetBranch);
+					const targetBranch = remoteTarget
+						? `origin/${initialTargetBranch}`
+						: initialTargetBranch;
+					if (linear) {
+						await performLinearRebase(currentBranch, targetBranch);
+					} else {
+						await startCherryPickRebase(currentBranch, targetBranch);
+					}
 				}
 			} catch (error) {
 				await handleError(error);
