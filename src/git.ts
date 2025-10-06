@@ -9,6 +9,14 @@ export class GitOperations {
 			: branch;
 	}
 
+	private validateBranchName(branch: string): string {
+		const branchName = this.stripOriginPrefix(branch);
+		if (!isValidBranchName(branchName)) {
+			throw new Error(`Invalid branch name: ${branchName}`);
+		}
+		return branchName;
+	}
+
 	constructor(workingDir?: string) {
 		const options: SimpleGitOptions = {
 			baseDir: workingDir || process.cwd(),
@@ -56,10 +64,7 @@ export class GitOperations {
 	}
 
 	async branchExists(branch: string): Promise<boolean> {
-		const branchName = this.stripOriginPrefix(branch);
-		if (!isValidBranchName(branchName)) {
-			throw new Error(`Invalid branch name: ${branchName}`);
-		}
+		const branchName = this.validateBranchName(branch);
 		try {
 			await this.git.raw([
 				"show-ref",
@@ -101,10 +106,7 @@ export class GitOperations {
 	}
 
 	async setupCherryPick(targetBranch: string): Promise<string> {
-		const branchName = this.stripOriginPrefix(targetBranch);
-		if (!isValidBranchName(branchName)) {
-			throw new Error(`Invalid branch name: ${branchName}`);
-		}
+		this.validateBranchName(targetBranch);
 		const tempBranchName = `temp-rebase-${process.pid}`;
 		const checkoutTarget = await this.resolveBranchRef(targetBranch);
 		await this.git.checkout(["-b", tempBranchName, checkoutTarget]);
@@ -112,14 +114,8 @@ export class GitOperations {
 	}
 
 	async getMergeBase(branch1: string, branch2: string): Promise<string> {
-		const branchName1 = this.stripOriginPrefix(branch1);
-		const branchName2 = this.stripOriginPrefix(branch2);
-		if (!isValidBranchName(branchName1)) {
-			throw new Error(`Invalid branch name: ${branchName1}`);
-		}
-		if (!isValidBranchName(branchName2)) {
-			throw new Error(`Invalid branch name: ${branchName2}`);
-		}
+		this.validateBranchName(branch1);
+		this.validateBranchName(branch2);
 		const baseBranch = await this.resolveBranchRef(branch1);
 		const result = await this.git.raw(["merge-base", baseBranch, branch2]);
 		return result.trim();
@@ -213,10 +209,7 @@ export class GitOperations {
 		progressCallback?: (message: string) => void,
 		options?: { continueOnConflict?: boolean },
 	): Promise<void> {
-		const branchName = this.stripOriginPrefix(targetBranch);
-		if (!isValidBranchName(branchName)) {
-			throw new Error(`Invalid branch name: ${branchName}`);
-		}
+		this.validateBranchName(targetBranch);
 		try {
 			progressCallback?.("Fetching all branches...");
 			await this.fetchAll();
