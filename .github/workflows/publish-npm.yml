@@ -40,17 +40,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
           VERSION=$(node -p "require('./package.json').version")
           BRANCH_NAME="release/${VERSION%.*}.x"
-          if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH_NAME" --silent; then
-            echo "Branch '$BRANCH_NAME' already exists. Doing nothing as requested."
+          REF_NAME="refs/heads/$BRANCH_NAME"
+
+          if gh ref list --head | grep -q "^${REF_NAME}$"; then
+            echo "Branch '$BRANCH_NAME' already exists. Doing nothing."
           else
-            echo "Branch '$BRANCH_NAME' does not exist. Creating it now."
-            gh api \
-              --method POST \
-              "repos/$GITHUB_REPOSITORY/git/refs" \
-              -f ref="refs/heads/$BRANCH_NAME" \
-              -f sha='${{ github.sha }}'
+            echo "Branch '$BRANCH_NAME' does not exist. Creating it."
+            gh ref create "$REF_NAME" "${{ github.sha }}"
           fi
 
       - name: Update npm to the latest version
