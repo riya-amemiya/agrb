@@ -36,12 +36,22 @@ jobs:
       - name: Build project
         run: bun run build
 
-      - name: Create release branch
+      - name: Create release branch if it does not exist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          gh api -X POST repos/$GITHUB_REPOSITORY/git/refs -f ref=refs/heads/release/${VERSION%.*}.x -f sha=${{ github.sha }}
+          BRANCH_NAME="release/${VERSION%.*}.x"
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH_NAME" --silent; then
+            echo "Branch '$BRANCH_NAME' already exists. Doing nothing as requested."
+          else
+            echo "Branch '$BRANCH_NAME' does not exist. Creating it now."
+            gh api \
+              --method POST \
+              "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f ref="refs/heads/$BRANCH_NAME" \
+              -f sha='${{ github.sha }}'
+          fi
 
       - name: Update npm to the latest version
         run: npm install -g npm@latest
