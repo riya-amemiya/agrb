@@ -40,7 +40,7 @@
 		"ink": "6.3.1",
 		"ink-select-input": "6.2.0",
 		"ink-spinner": "5.0.0",
-		"react": "19.1.1",
+		"react": "19.2.0",
 		"simple-git": "3.28.0",
 		"valibot": "1.1.0"
 	},
@@ -48,7 +48,7 @@
 		"@biomejs/biome": "2.2.5",
 		"@sindresorhus/tsconfig": "8.0.1",
 		"@types/bun": "1.2.23",
-		"@types/react": "19.1.15",
+		"@types/react": "19.2.1",
 		"chalk": "5.6.2",
 		"ink-testing-library": "4.0.0",
 		"ts-node": "10.9.2",
