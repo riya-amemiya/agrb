@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76 # v2.0.2
@@ -40,16 +41,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
           VERSION=$(node -p "require('./package.json').version")
           BRANCH_NAME="release/${VERSION%.*}.x"
-          REF_NAME="refs/heads/$BRANCH_NAME"
-
-          if gh ref list --head | grep -q "^${REF_NAME}$"; then
-            echo "Branch '$BRANCH_NAME' already exists. Doing nothing."
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH_NAME" --silent; then
+            echo "Branch '$BRANCH_NAME' already exists. Doing nothing as requested."
           else
-            echo "Branch '$BRANCH_NAME' does not exist. Creating it."
-            gh ref create "$REF_NAME" "${{ github.sha }}"
+            echo "Branch '$BRANCH_NAME' does not exist. Creating it now."
+            gh api \
+              --method POST \
+              "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f ref="refs/heads/$BRANCH_NAME" \
+              -f sha='${{ github.sha }}'
           fi
 
       - name: Update npm to the latest version
