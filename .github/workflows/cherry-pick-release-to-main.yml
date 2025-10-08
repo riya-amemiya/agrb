@@ -102,8 +102,7 @@ jobs:
 
               title="sync ${shortsha} to ${target}"
               commit_url="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/commit/${c}"
-              body="Auto PR to sync commit ${c} from '${RELEASE_BRANCH}' into '${target}'.\n\nCommit: ${commit_url}\n\nConflicts, if any, are intentionally kept for PR-side resolution."
-              gh pr create --base "${target}" --head "${wbranch}" --title "${title}" --body "${body}" || echo "PR may already exist for ${wbranch}; skipping"
+              echo -e "Auto PR to sync commit ${c} from '${RELEASE_BRANCH}' into '${target}'.\n\nCommit: ${commit_url}\n\nConflicts, if any, are intentionally kept for PR-side resolution." | gh pr create --base "${target}" --head "${wbranch}" --title "${title}" --body-file - || echo "PR may already exist for ${wbranch}; skipping"
             done
           done
 
