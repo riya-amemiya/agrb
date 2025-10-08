@@ -6,8 +6,12 @@ We currently support the following versions of agrb with security updates:
 
 | Version | Supported |
 | ------- | ------------------ |
+<<<<<<< HEAD
 | 1.2.x | ✅ Yes |
 | 1.1.x | ❌ No |
+=======
+| 1.1.x | ✅ Yes |
+>>>>>>> 2ddb4e7 (chore: update SECURITY.md (#76))
 | 1.0.x | ❌ No |
 | 0.6.x | ❌ No |
 | 0.5.x | ❌ No |
