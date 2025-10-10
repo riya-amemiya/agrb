@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
 	ConfigEditor as AgToolkitConfigEditor,
@@ -22,9 +22,9 @@ import {
 } from "./lib/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const packageJsonPath = join(__dirname, "..", "package.json");
-const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+const __dirname = path.dirname(__filename);
+const packageJsonPath = path.join(__dirname, "..", "package.json");
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
 const helpMessage = `
 Usage
@@ -130,7 +130,10 @@ const AgrbConfigEditor = () => {
 			toolName="agrb"
 			configItems={agrbConfigItems}
 			defaultConfig={defaultConfig}
-			loadConfig={async () => (await getConfig()).config}
+			loadConfig={async () => {
+				const { config } = await getConfig();
+				return config;
+			}}
 			writeConfig={(config) =>
 				writeGlobalConfig(config, CONFIG_DIR_NAME, CONFIG_FILE_NAME)
 			}
@@ -157,18 +160,15 @@ try {
 		process.exit(0);
 	}
 
-	(async () => {
-		if (cli.flags.config) {
-			await handleConfigCommand(cli.flags.config, {
-				getConfig,
-				getGlobalConfigPath: () => GLOBAL_CONFIG_PATH,
-				resetGlobalConfig: () =>
-					resetGlobalConfig(defaultConfig, CONFIG_DIR_NAME, CONFIG_FILE_NAME),
-				ConfigEditorComponent: AgrbConfigEditor,
-			});
-			return;
-		}
-
+	if (cli.flags.config) {
+		await handleConfigCommand(cli.flags.config, {
+			getConfig,
+			getGlobalConfigPath: () => GLOBAL_CONFIG_PATH,
+			resetGlobalConfig: () =>
+				resetGlobalConfig(defaultConfig, CONFIG_DIR_NAME, CONFIG_FILE_NAME),
+			ConfigEditorComponent: AgrbConfigEditor,
+		});
+	} else {
 		const { config } = cli.flags.noConfig
 			? { config: defaultConfig }
 			: await getConfig();
@@ -196,7 +196,7 @@ try {
 		};
 
 		render(<App {...properties} />);
-	})();
+	}
 } catch (error) {
 	if (error instanceof Error) {
 		console.error(`❌ ${error.message}`);

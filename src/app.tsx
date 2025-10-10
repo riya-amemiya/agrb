@@ -1,9 +1,8 @@
-import { sanitizeString } from "ag-toolkit";
+import { GitOperations, sanitizeString } from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import Spinner from "ink-spinner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BranchSelector } from "./components/BranchSelector.js";
-import { GitOperations } from "./git.js";
 
 type OnConflictStrategy = "skip" | "ours" | "theirs" | "pause";
 
@@ -291,7 +290,10 @@ export default function App({
 		let subject = "";
 		try {
 			subject = await gitOps.getCommitSubject(commit);
-		} catch {}
+		} catch {
+			// The commit subject is used for display purposes only.
+			// If it fails, we can proceed without it.
+		}
 		setState((previous) => ({
 			...previous,
 			message: `Applying commit ${currentCommitIndex + 1}/${
