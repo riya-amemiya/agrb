@@ -2,13 +2,17 @@ import { Box, Text, useInput } from "ink";
 import SelectInput from "ink-select-input";
 import { useState } from "react";
 
-type Props = {
+type Properties = {
 	branches: string[];
 	onSelect: (branch: string) => void;
 	labelPrefix?: string;
 };
 
-export const BranchSelector = ({ branches, onSelect, labelPrefix }: Props) => {
+export const BranchSelector = ({
+	branches,
+	onSelect,
+	labelPrefix,
+}: Properties) => {
 	const [searchTerm, setSearchTerm] = useState("");
 
 	useInput(
@@ -20,9 +24,9 @@ export const BranchSelector = ({ branches, onSelect, labelPrefix }: Props) => {
 				return;
 			}
 			if (key.backspace || key.delete) {
-				setSearchTerm((prev) => prev.slice(0, -1));
+				setSearchTerm((previous) => previous.slice(0, -1));
 			} else if (input && !key.ctrl && !key.meta) {
-				setSearchTerm((prev) => prev + input);
+				setSearchTerm((previous) => previous + input);
 			}
 		},
 		{ isActive: true },
