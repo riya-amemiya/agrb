@@ -186,16 +186,16 @@ try {
 			"noBackup",
 		] as const;
 
-		const flagProps = Object.fromEntries(
+		const flagProperties = Object.fromEntries(
 			configurableFlags.map((flag) => [flag, cli.flags[flag] ?? config[flag]]),
 		);
 
-		const props = {
+		const properties = {
 			targetBranch: cli.flags.target,
-			...flagProps,
+			...flagProperties,
 		};
 
-		render(<App {...props} />);
+		render(<App {...properties} />);
 	})();
 } catch (error) {
 	if (error instanceof Error) {

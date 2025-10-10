@@ -17,6 +17,7 @@
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"test": "biome check .",
+		"eslint": "eslint src",
 		"lint": "biome check . --write",
 		"ci": "biome ci .",
 		"prepublishOnly": "npm run build"
@@ -49,7 +50,11 @@
 		"@sindresorhus/tsconfig": "8.0.1",
 		"@types/bun": "1.2.23",
 		"@types/react": "19.2.1",
+		"@typescript-eslint/eslint-plugin": "^8.46.0",
+		"@typescript-eslint/parser": "^8.46.0",
 		"chalk": "5.6.2",
+		"eslint": "^9.37.0",
+		"eslint-plugin-unicorn": "^61.0.2",
 		"ink-testing-library": "4.0.0",
 		"ts-node": "10.9.2",
 		"typescript": "5.9.3"

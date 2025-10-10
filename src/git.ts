@@ -107,10 +107,10 @@ export class GitOperations {
 
 	async setupCherryPick(targetBranch: string): Promise<string> {
 		this.validateBranchName(targetBranch);
-		const tempBranchName = `temp-rebase-${process.pid}`;
+		const temporaryBranchName = `temp-rebase-${process.pid}`;
 		const checkoutTarget = await this.resolveBranchRef(targetBranch);
-		await this.git.checkout(["-b", tempBranchName, checkoutTarget]);
-		return tempBranchName;
+		await this.git.checkout(["-b", temporaryBranchName, checkoutTarget]);
+		return temporaryBranchName;
 	}
 
 	async getMergeBase(branch1: string, branch2: string): Promise<string> {
@@ -135,12 +135,12 @@ export class GitOperations {
 		commitSha: string,
 		options?: { allowEmpty?: boolean },
 	): Promise<void> {
-		const args = ["cherry-pick"];
+		const arguments_ = ["cherry-pick"];
 		if (options?.allowEmpty) {
-			args.push("--allow-empty");
+			arguments_.push("--allow-empty");
 		}
-		args.push(commitSha);
-		await this.git.raw(args);
+		arguments_.push(commitSha);
+		await this.git.raw(arguments_);
 	}
 
 	async continueCherryPick(): Promise<void> {
@@ -166,14 +166,14 @@ export class GitOperations {
 
 	async finishCherryPick(
 		currentBranch: string,
-		tempBranchName: string,
+		temporaryBranchName: string,
 		options?: { createBackup?: boolean },
 	): Promise<void> {
 		await this.git.checkout(currentBranch);
 		if (options?.createBackup) {
 			try {
 				const currentSha = (await this.git.revparse([currentBranch])).trim();
-				const safeBranch = currentBranch.replace(/\//g, "-");
+				const safeBranch = currentBranch.replaceAll("/", "-");
 				const tagName = `agrb-backup-${safeBranch}-${Date.now()}`;
 				await this.git.addAnnotatedTag(
 					tagName,
@@ -187,19 +187,19 @@ export class GitOperations {
 				);
 			}
 		}
-		await this.git.raw(["reset", "--hard", tempBranchName]);
+		await this.git.raw(["reset", "--hard", temporaryBranchName]);
 	}
 
 	async cleanupCherryPick(
-		tempBranchName: string,
+		temporaryBranchName: string,
 		originalBranch: string,
 	): Promise<void> {
 		try {
 			const current = await this.getCurrentBranch();
-			if (current === tempBranchName) {
+			if (current === temporaryBranchName) {
 				await this.git.checkout(originalBranch);
 			}
-			await this.git.branch(["-D", tempBranchName]);
+			await this.git.branch(["-D", temporaryBranchName]);
 		} catch {}
 	}
 
@@ -224,12 +224,12 @@ export class GitOperations {
 
 			const rebaseTarget = await this.resolveBranchRef(targetBranch);
 
-			const rebaseArgs = ["rebase", rebaseTarget];
+			const rebaseArguments = ["rebase", rebaseTarget];
 			if (options?.continueOnConflict) {
-				rebaseArgs.push("-X", "ours");
+				rebaseArguments.push("-X", "ours");
 			}
 
-			await this.git.raw(rebaseArgs);
+			await this.git.raw(rebaseArguments);
 			progressCallback?.("Linear rebase completed successfully");
 		} catch (error) {
 			if (options?.continueOnConflict) {
@@ -243,13 +243,13 @@ export class GitOperations {
 					progressCallback?.(
 						"Linear rebase completed with conflicts auto-resolved",
 					);
-				} catch (e) {
+				} catch (error_) {
 					try {
 						await this.git.raw(["rebase", "--abort"]);
 					} catch {}
 					throw new Error(
 						`Linear rebase failed during continue: ${
-							e instanceof Error ? e.message : String(e)
+							error_ instanceof Error ? error_.message : String(error_)
 						}`,
 					);
 				}
@@ -282,12 +282,12 @@ export class GitOperations {
 		if (!line) {
 			return null;
 		}
-		const ref = line.split(" ")[0];
-		return ref || null;
+		const reference = line.split(" ")[0];
+		return reference || null;
 	}
 
-	async popStash(stashRef: string): Promise<void> {
-		await this.git.raw(["stash", "pop", stashRef]);
+	async popStash(stashReference: string): Promise<void> {
+		await this.git.raw(["stash", "pop", stashReference]);
 	}
 
 	async pushWithLease(branch: string): Promise<void> {
