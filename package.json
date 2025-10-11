@@ -43,6 +43,7 @@
 		"ink-spinner": "5.0.0",
 		"react": "19.2.0",
 		"simple-git": "3.28.0",
+		"umt": "2.10.1",
 		"valibot": "1.1.0"
 	},
 	"devDependencies": {

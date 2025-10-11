@@ -10,6 +10,7 @@
         "ink-spinner": "5.0.0",
         "react": "19.2.0",
         "simple-git": "3.28.0",
+        "umt": "2.10.1",
         "valibot": "1.1.0",
       },
       "devDependencies": {
@@ -428,6 +429,8 @@
     "type-fest": ["type-fest@4.41.0", "", {}, "sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA=="],
 
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+
+    "umt": ["umt@2.10.1", "", {}, "sha512-uVuz2Ou0c1Tav5jb3TMb11x7FkWTd2HiDtGFOC5+ZljoviNxg6I4eeGysaa4pXwMHitL8MRdsdVxShtiltry5g=="],
 
     "undici-types": ["undici-types@7.12.0", "", {}, "sha512-goOacqME2GYyOZZfb5Lgtu+1IDmAlAEu5xnD3+xTzS10hT0vzpf0SPjkXwAw9Jm+4n/mQGDP3LO8CPbYROeBfQ=="],
 

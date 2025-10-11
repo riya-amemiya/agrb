@@ -1,13 +1,13 @@
 import { getGlobalConfigPath, loadConfig } from "ag-toolkit";
 import {
 	boolean,
-	type InferOutput,
 	number,
 	object,
 	optional,
-	picklist,
-	safeParse,
-} from "valibot";
+	type SchemaToInterface,
+	string,
+	type ValidateReturnType,
+} from "umt";
 
 export const CONFIG_FILE_NAME = "config.json";
 export const CONFIG_DIR_NAME = "agrb";
@@ -15,12 +15,21 @@ export const LOCAL_CONFIG_FILE_NAME = ".agrbrc";
 
 const onConflictValues = ["skip", "ours", "theirs", "pause"] as const;
 
+export const picklist = <T extends readonly unknown[]>(
+	values: T,
+	message?: string,
+): ValidateReturnType<string> => ({
+	type: "string",
+	message,
+	validate: (value) => values.includes(value),
+});
+
 const configSchema = object({
 	allowEmpty: optional(boolean()),
 	linear: optional(boolean()),
 	continueOnConflict: optional(boolean()),
 	remoteTarget: optional(boolean()),
-	onConflict: optional(picklist(onConflictValues)),
+	onConflict: optional(string([picklist(onConflictValues)])),
 	dryRun: optional(boolean()),
 	yes: optional(boolean()),
 	autostash: optional(boolean()),
@@ -29,7 +38,7 @@ const configSchema = object({
 	schemaVersion: optional(number()),
 });
 
-export type AgrbConfig = InferOutput<typeof configSchema>;
+export type AgrbConfig = SchemaToInterface<typeof configSchema>;
 
 export const configKeys = [
 	"allowEmpty",
@@ -64,26 +73,12 @@ export const defaultConfig: Omit<AgrbConfig, "schemaVersion"> = {
 };
 
 export const validateConfig = (config: unknown): AgrbConfig => {
-	const result = safeParse(configSchema, config);
-	if (!result.success) {
-		const errors = result.issues.map((issue) => {
-			const path = issue.path
-				?.map((p) => {
-					if ("key" in p && p.key !== undefined) {
-						return String(p.key);
-					}
-					if ("index" in p && p.index !== undefined) {
-						return String(p.index);
-					}
-					return p.type;
-				})
-				.filter(Boolean)
-				.join(".");
-			return `'${path || "root"}': ${issue.message}`;
-		});
-		throw new Error(`Configuration errors:\n- ${errors.join("\n- ")}`);
+	const result = configSchema(config as AgrbConfig);
+	if (!result.validate) {
+		const error = result.message;
+		throw new Error(`Configuration errors:\n- ${error}`);
 	}
-	return result.output;
+	return result.type;
 };
 
 export const getConfig = async (cwd: string = process.cwd()) => {

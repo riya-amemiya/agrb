@@ -4,7 +4,9 @@
 		"strict": true,
 		"esModuleInterop": true,
 		"outDir": "dist",
-		"jsx": "react-jsx"
+		"jsx": "react-jsx",
+		"module": "ESNext",
+		"moduleResolution": "bundler"
 	},
 	"include": ["src"]
 }
