@@ -4,7 +4,7 @@
     "": {
       "name": "agrb",
       "dependencies": {
-        "ag-toolkit": "0.1.4",
+        "ag-toolkit": "0.2.0",
         "ink": "6.3.1",
         "ink-select-input": "6.2.0",
         "ink-spinner": "5.0.0",
@@ -141,7 +141,7 @@
 
     "acorn-walk": ["acorn-walk@8.3.4", "", { "dependencies": { "acorn": "^8.11.0" } }, "sha512-ueEepnujpqee2o5aIYnvHU6C0A42MNdsIDeqy5BydrkuC5R1ZuUFnm27EeFJGoEHJQgn3uleRvmTXaJgfXbt4g=="],
 
-    "ag-toolkit": ["ag-toolkit@0.1.4", "", { "dependencies": { "ink": "6.3.1", "ink-select-input": "6.2.0", "ink-spinner": "5.0.0", "react": "19.2.0", "simple-git": "3.28.0", "valibot": "1.1.0" } }, "sha512-7zZyvCPvimiDArm3WYQxy0KxB+qqWhuNQcjgTwpc+EOcA0/4ZlWOscaZZMHC+dDlpNPgwjZNTEVADnfRnAjbkQ=="],
+    "ag-toolkit": ["ag-toolkit@0.2.0", "", { "dependencies": { "ink": "6.3.1", "ink-select-input": "6.2.0", "ink-spinner": "5.0.0", "react": "19.2.0", "simple-git": "3.28.0", "valibot": "1.1.0" } }, "sha512-3+Mkw2PNe/fGkD7+uNVxxroUjlLYiHcr1vFTi3gUdgyAEtQSBsX4wZi4xkorOL5+SIdZnjuSksT6jAWkTKVXPw=="],
 
     "ajv": ["ajv@6.12.6", "", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g=="],
 
