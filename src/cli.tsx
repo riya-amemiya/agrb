@@ -6,6 +6,7 @@ import {
 	ConfigEditor as AgToolkitConfigEditor,
 	ArgParser,
 	type ConfigItem,
+	defineSchema,
 	handleConfigCommand,
 	resetGlobalConfig,
 	writeGlobalConfig,
@@ -63,7 +64,7 @@ Examples
   $ agrb --config set
 `;
 
-const schema = {
+const schema = defineSchema({
 	target: {
 		type: "string",
 		shortFlag: "t",
@@ -78,7 +79,8 @@ const schema = {
 		type: "boolean",
 	},
 	onConflict: {
-		type: "string",
+		type: "enum",
+		enumValues: ["skip", "ours", "theirs", "pause"],
 	},
 	remoteTarget: {
 		type: "boolean",
@@ -105,24 +107,27 @@ const schema = {
 	noBackup: {
 		type: "boolean",
 	},
-} as const;
+});
 
-const agrbConfigItems: ConfigItem<AgrbConfig>[] = [
-	{ key: "allowEmpty", type: "boolean" },
-	{ key: "linear", type: "boolean" },
-	{ key: "continueOnConflict", type: "boolean" },
-	{ key: "remoteTarget", type: "boolean" },
-	{
-		key: "onConflict",
-		type: "select",
-		options: ["skip", "ours", "theirs", "pause"],
-	},
-	{ key: "dryRun", type: "boolean" },
-	{ key: "yes", type: "boolean" },
-	{ key: "autostash", type: "boolean" },
-	{ key: "pushWithLease", type: "boolean" },
-	{ key: "noBackup", type: "boolean" },
-];
+const agrbConfigItems: ConfigItem<AgrbConfig>[] = Object.keys(schema)
+	.filter(
+		(
+			key,
+		): key is Exclude<
+			keyof typeof schema,
+			"target" | "config" | "noConfig"
+		> => {
+			return key !== "target" && key !== "config" && key !== "noConfig";
+		},
+	)
+	.map((key) => {
+		const type = schema[key].type;
+		return {
+			key,
+			type: type === "enum" ? "select" : type,
+			options: type === "enum" ? schema[key].enumValues : undefined,
+		};
+	});
 
 const AgrbConfigEditor = () => {
 	return (
