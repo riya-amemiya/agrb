@@ -18,6 +18,7 @@ export default [
 			".dependency-cruiser.js",
 			"cjs.build.mjs",
 			"eslint.config.mjs",
+			"vite.config.ts",
 		],
 	},
 	{
