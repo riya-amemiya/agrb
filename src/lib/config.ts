@@ -7,7 +7,7 @@ import {
 	type SchemaToInterface,
 	string,
 	type ValidateReturnType,
-} from "umt";
+} from "umt/Validate";
 
 export const CONFIG_FILE_NAME = "config.json";
 export const CONFIG_DIR_NAME = "agrb";
