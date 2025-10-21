@@ -46,7 +46,7 @@
 		"umt": "2.10.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.5",
+		"@biomejs/biome": "2.2.6",
 		"@sindresorhus/tsconfig": "8.0.1",
 		"@types/bun": "1.2.23",
 		"@types/react": "19.2.1",
