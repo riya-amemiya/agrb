@@ -58,6 +58,6 @@
 		"ink-testing-library": "4.0.0",
 		"ts-node": "10.9.2",
 		"typescript": "5.9.3",
-		"vite": "7.1.10"
+		"vite": "7.1.11"
 	}
 }
