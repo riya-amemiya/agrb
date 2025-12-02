@@ -22,7 +22,7 @@ jobs:
     if: ${{ startsWith(github.event.head_commit.message, '[sync]') == false && contains(github.event.head_commit.message, 'npm version') == false && contains(github.event.head_commit.message, 'version bump') == false && !startsWith(github.event.head_commit.message, '1.') && !startsWith(github.event.head_commit.message, '2.') && !startsWith(github.event.head_commit.message, '3.') && !startsWith(github.event.head_commit.message, '4.') && !startsWith(github.event.head_commit.message, '5.') && !startsWith(github.event.head_commit.message, '6.') && !startsWith(github.event.head_commit.message, '7.') && !startsWith(github.event.head_commit.message, '8.') && !startsWith(github.event.head_commit.message, '9.') && !startsWith(github.event.head_commit.message, '0.') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           fetch-depth: 0
           persist-credentials: false
