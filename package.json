@@ -1,6 +1,6 @@
 {
 	"name": "agrb",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"description": "Interactive CLI to rebase a branch onto another safely (cherry-pick or linear rebase)",
 	"license": "MIT",
 	"bin": "dist/cli.js",
@@ -37,7 +37,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"ag-toolkit": "0.2.0",
+		"ag-toolkit": "0.3.0",
 		"ink": "6.5.1",
 		"ink-select-input": "6.2.0",
 		"ink-spinner": "5.0.0",
