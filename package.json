@@ -47,6 +47,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.10",
+		"@eslint/js": "^10.0.1",
 		"@sindresorhus/tsconfig": "8.1.0",
 		"@types/bun": "1.3.11",
 		"@types/react": "19.2.14",

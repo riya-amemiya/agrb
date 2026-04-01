@@ -1,30 +1,39 @@
-import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import typescriptEslintPlugin from "@typescript-eslint/eslint-plugin";
 import typescriptEslintParser from "@typescript-eslint/parser";
 import unicornPlugin from "eslint-plugin-unicorn";
 
-const compat = new FlatCompat();
-
 export default [
-	js.configs.recommended,
-	unicornPlugin.configs.recommended,
-	...compat.extends("plugin:@typescript-eslint/recommended"),
 	{
 		ignores: [
 			"jest.config.ts",
-			"tmp/",
-			"src/tests/",
+			"tmp/**",
+			"src/tests/**",
 			".dependency-cruiser.js",
 			"cjs.build.mjs",
 			"eslint.config.mjs",
 			"vite.config.ts",
+			"dist/**",
 		],
 	},
+	js.configs.recommended,
+	unicornPlugin.configs.recommended,
 	{
+		files: ["src/**/*.ts", "src/**/*.tsx"],
 		languageOptions: {
 			sourceType: "module",
 			ecmaVersion: 2024,
+			globals: {
+				process: "readonly",
+				console: "readonly",
+				setTimeout: "readonly",
+				clearTimeout: "readonly",
+				setInterval: "readonly",
+				clearInterval: "readonly",
+				__dirname: "readonly",
+				__filename: "readonly",
+				Buffer: "readonly",
+			},
 			parser: typescriptEslintParser,
 			parserOptions: {
 				project: "./tsconfig.json",
@@ -34,6 +43,7 @@ export default [
 			"@typescript-eslint": typescriptEslintPlugin,
 		},
 		rules: {
+			...typescriptEslintPlugin.configs.recommended.rules,
 			"unicorn/filename-case": [
 				"error",
 				{
