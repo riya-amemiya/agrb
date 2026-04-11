@@ -45,6 +45,12 @@
 		"simple-git": "3.35.2",
 		"umt": "2.14.0"
 	},
+	"overrides": {
+		"react": "19.2.4",
+		"ink": "6.8.0",
+		"ink-select-input": "6.2.0",
+		"ink-spinner": "5.0.0"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.10",
 		"@eslint/js": "^10.0.1",
