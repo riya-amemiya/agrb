@@ -424,9 +424,10 @@ export default function App({
 			exit();
 		}
 		if (state.status === "error") {
-			exit(new Error(state.message));
+			process.exitCode = 1;
+			exit();
 		}
-	}, [state.status, state.message, exit]);
+	}, [state.status, exit]);
 
 	useEffect(() => {
 		if (state.status === "loading" && state.currentCommitIndex !== undefined) {
