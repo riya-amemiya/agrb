@@ -1,6 +1,6 @@
 import { Box, Text, useInput } from "ink";
 import SelectInput from "ink-select-input";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type Properties = {
 	branches: string[];
@@ -32,23 +32,28 @@ export const BranchSelector = ({
 		{ isActive: true },
 	);
 
-	const items = branches.map((branch) => ({
-		label: `${labelPrefix ?? ""}${branch}`,
-		value: branch,
-	}));
+	const items = useMemo(
+		() =>
+			branches.map((branch) => ({
+				label: `${labelPrefix ?? ""}${branch}`,
+				value: branch,
+			})),
+		[branches, labelPrefix],
+	);
 
-	const filteredItems =
-		items.filter(({ label }) => {
+	const filteredItems = useMemo(() => {
+		const searchTerms = searchTerm
+			.toLowerCase()
+			.split(/\s+/)
+			.filter((term) => term.length > 0);
+		if (searchTerms.length === 0) {
+			return items;
+		}
+		return items.filter(({ label }) => {
 			const labelLower = label.toLowerCase();
-			const searchTerms = searchTerm
-				.toLowerCase()
-				.split(/\s+/)
-				.filter((term) => term.length > 0);
-			if (searchTerms.length === 0) {
-				return true;
-			}
 			return searchTerms.every((term) => labelLower.includes(term));
-		}) || [];
+		});
+	}, [items, searchTerm]);
 
 	const handleSelect = (item: { label: string; value: string } | undefined) => {
 		if (item) {
