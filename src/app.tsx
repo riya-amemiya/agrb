@@ -81,10 +81,20 @@ export default function App({
 					stateReference.current.currentBranch,
 				);
 			}
+			let stashNote = "";
+			const { stashRef } = stateReference.current;
+			if (stashRef) {
+				try {
+					await gitOps.popStash(stashRef);
+				} catch {
+					stashNote = ` (your changes are still stashed as ${stashRef}; run 'git stash pop ${stashRef}')`;
+				}
+			}
 			setState((previous) => ({
 				...previous,
 				status: "error",
-				message: `Error: ${errorMessage}`,
+				stashRef: undefined,
+				message: `Error: ${errorMessage}${stashNote}`,
 			}));
 		},
 		[gitOps],
@@ -169,7 +179,7 @@ export default function App({
 	const startCherryPickRebase = useCallback(
 		async (currentBranch: string, target: string) => {
 			try {
-				if (!yes && stateReference.current.status !== "confirm") {
+				if (!(dryRun || yes) && stateReference.current.status !== "confirm") {
 					setState((previous) => ({
 						...previous,
 						status: "confirm",
@@ -200,10 +210,25 @@ export default function App({
 				);
 
 				if (dryRun) {
+					const preview =
+						commits.length > 0
+							? ` [${commits.map((sha) => sha.slice(0, 7)).join(", ")}]`
+							: "";
 					setState((previous) => ({
 						...previous,
 						status: "success",
-						message: `DRY-RUN: Would apply ${commits.length} commits from ${mergeBase.slice(0, 7)}..${currentBranch} onto ${target} (cherry-pick).`,
+						message: `DRY-RUN: Would apply ${commits.length} commits from ${mergeBase.slice(0, 7)}..${currentBranch} onto ${target} (cherry-pick).${preview}`,
+						currentBranch,
+						targetBranch: target,
+					}));
+					return;
+				}
+
+				if (commits.length === 0) {
+					setState((previous) => ({
+						...previous,
+						status: "success",
+						message: `Already up to date: no commits to replay onto ${target}.`,
 						currentBranch,
 						targetBranch: target,
 					}));
@@ -311,6 +336,7 @@ export default function App({
 			const errorMessage =
 				error instanceof Error ? error.message : String(error);
 			if (errorMessage.includes("empty")) {
+				await gitOps.skipCherryPick();
 				setState((previous) => ({
 					...previous,
 					message: `Commit ${commit.slice(
@@ -452,15 +478,17 @@ export default function App({
 					);
 				}
 				const currentBranch = await gitOps.getCurrentBranch();
+				if (currentBranch === "HEAD") {
+					throw new Error(
+						"Detached HEAD state detected. Please checkout a branch before running agrb.",
+					);
+				}
 				setState((previous) => ({ ...previous, currentBranch }));
 
 				if (initialTargetBranch) {
-					const targetBranch = remoteTarget
-						? `origin/${initialTargetBranch}`
-						: initialTargetBranch;
 					await (linear
-						? performLinearRebase(currentBranch, targetBranch)
-						: startCherryPickRebase(currentBranch, targetBranch));
+						? performLinearRebase(currentBranch, initialTargetBranch)
+						: startCherryPickRebase(currentBranch, initialTargetBranch));
 				} else {
 					const branches = remoteTarget
 						? await gitOps.getAllBranches()
@@ -534,10 +562,23 @@ export default function App({
 
 			if (key.escape) {
 				if (state.tempBranchName && state.currentBranch) {
+					if (
+						state.status === "paused_on_conflict" ||
+						state.status === "loading"
+					) {
+						await gitOps.abortCherryPick();
+					}
 					await gitOps.cleanupCherryPick(
 						state.tempBranchName,
 						state.currentBranch,
 					);
+				}
+				if (state.stashRef) {
+					try {
+						await gitOps.popStash(state.stashRef);
+					} catch (popError) {
+						void popError;
+					}
 				}
 				exit();
 				return;
