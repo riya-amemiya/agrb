@@ -48,5 +48,5 @@ bun run test
 ## Development Conventions
 
 **Code Style**: The project uses Biome for code formatting and linting. The configuration can be found in the `biome.json` file.
-**Testing**: The project uses Biome for checking the code.
+**Testing**: Unit tests live in `src/tests` and run with `bun test`. Biome handles static checks via `bun run test`.
 **Contribution**: Contribution guidelines are available in `CONTRIBUTING.md`.

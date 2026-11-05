@@ -28,7 +28,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Run tests
-        run: bun run test
+        run: bun run test && bun test
 
       - name: Run CI checks (lint and format)
         run: bun run ci
