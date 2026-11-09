@@ -46,7 +46,7 @@
 		"umt": "5.1.1"
 	},
 	"overrides": {
-		"react": "19.3.0",
+		"react": "19.3.1",
 		"ink": "8.0.0",
 		"ink-select-input": "6.2.0",
 		"ink-spinner": "5.0.0"
