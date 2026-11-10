@@ -120,13 +120,11 @@ const agrbConfigItems: ConfigItem<AgrbConfig>[] = Object.keys(schema)
 			return key !== "target" && key !== "config" && key !== "noConfig";
 		},
 	)
-	.map((key) => {
-		const type = schema[key].type;
-		return {
-			key,
-			type: type === "enum" ? "select" : type,
-			options: type === "enum" ? schema[key].enumValues : undefined,
-		};
+	.map((key): ConfigItem<AgrbConfig> => {
+		const flag = schema[key];
+		return flag.type === "enum"
+			? { key, type: "select", options: flag.enumValues }
+			: { key, type: flag.type };
 	});
 
 const AgrbConfigEditor = () => {

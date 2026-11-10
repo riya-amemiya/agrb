@@ -89,7 +89,7 @@ node dist/cli.js
 
 ### Testing
 
-We use Biome for linting and code formatting. Make sure your changes pass all checks:
+We use oxlint for linting and oxfmt for code formatting. Make sure your changes pass all checks:
 
 ```bash
 bun run test
@@ -103,7 +103,7 @@ bun run lint
 
 ### Code Style
 
-- We use Biome for code formatting and linting
+- We use oxfmt for code formatting and oxlint for linting
 - Use TypeScript for all new code
 - Follow the existing code style and patterns
 - Write clear, self-documenting code

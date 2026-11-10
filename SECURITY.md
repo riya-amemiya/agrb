@@ -5,19 +5,19 @@
 We currently support the following versions of agrb with security updates:
 
 | Version | Supported |
-| ------- | ------------------ |
-| 1.5.x | ✅ Yes |
-| 1.4.x | ❌ No |
-| 1.3.x | ❌ No |
-| 1.2.x | ❌ No |
-| 1.1.x | ❌ No |
-| 1.0.x | ❌ No |
-| 0.6.x | ❌ No |
-| 0.5.x | ❌ No |
-| 0.4.x | ❌ No |
-| 0.3.x | ❌ No |
-| 0.2.x | ❌ No |
-| 0.1.x | ❌ No |
+| ------- | --------- |
+| 1.5.x   | ✅ Yes    |
+| 1.4.x   | ❌ No     |
+| 1.3.x   | ❌ No     |
+| 1.2.x   | ❌ No     |
+| 1.1.x   | ❌ No     |
+| 1.0.x   | ❌ No     |
+| 0.6.x   | ❌ No     |
+| 0.5.x   | ❌ No     |
+| 0.4.x   | ❌ No     |
+| 0.3.x   | ❌ No     |
+| 0.2.x   | ❌ No     |
+| 0.1.x   | ❌ No     |
 
 ## Reporting a Vulnerability
 
