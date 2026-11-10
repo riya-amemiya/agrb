@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 type Properties = {
 	branches: string[];
 	onSelect: (branch: string) => void;
-	labelPrefix?: string;
+	labelPrefix?: string | undefined;
 };
 
 export const BranchSelector = ({

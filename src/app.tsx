@@ -1,23 +1,30 @@
 import { GitOperations, sanitizeString } from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import Spinner from "ink-spinner";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { BranchSelector } from "./components/BranchSelector.js";
 
 type OnConflictStrategy = "skip" | "ours" | "theirs" | "pause";
 
 type Properties = {
-	targetBranch?: string;
-	allowEmpty?: boolean;
-	linear?: boolean;
-	continueOnConflict?: boolean;
-	remoteTarget?: boolean;
-	onConflict?: string;
-	dryRun?: boolean;
-	yes?: boolean;
-	autostash?: boolean;
-	pushWithLease?: boolean;
-	noBackup?: boolean;
+	targetBranch?: string | undefined;
+	allowEmpty?: boolean | undefined;
+	linear?: boolean | undefined;
+	continueOnConflict?: boolean | undefined;
+	remoteTarget?: boolean | undefined;
+	onConflict?: string | undefined;
+	dryRun?: boolean | undefined;
+	yes?: boolean | undefined;
+	autostash?: boolean | undefined;
+	pushWithLease?: boolean | undefined;
+	noBackup?: boolean | undefined;
 };
 
 type Status =
@@ -32,12 +39,12 @@ interface RebaseState {
 	status: Status;
 	message: string;
 	currentBranch?: string;
-	targetBranch?: string;
+	targetBranch?: string | undefined;
 	availableBranches?: string[];
 	commitsToPick?: string[];
 	currentCommitIndex?: number;
 	tempBranchName?: string;
-	stashRef?: string | null;
+	stashRef?: string | null | undefined;
 	pendingMode?: "cherry" | "linear";
 }
 
@@ -66,7 +73,9 @@ export default function App({
 	const gitOps = useMemo(() => new GitOperations(), []);
 
 	const stateReference = useRef(state);
-	stateReference.current = state;
+	useLayoutEffect(() => {
+		stateReference.current = state;
+	}, [state]);
 
 	const onConflict: OnConflictStrategy =
 		onConflictRaw && isValidOnConflict(onConflictRaw) ? onConflictRaw : "pause";
@@ -146,7 +155,7 @@ export default function App({
 					target,
 					(message: string) =>
 						setState((previous) => ({ ...previous, message })),
-					{ continueOnConflict },
+					{ continueOnConflict: continueOnConflict === true },
 				);
 				if (stateReference.current.stashRef) {
 					await gitOps.popStash(stateReference.current.stashRef);
@@ -278,10 +287,6 @@ export default function App({
 
 		if (currentCommitIndex >= commitsToPick.length) {
 			try {
-				setState((previous) => ({
-					...previous,
-					message: "Finishing rebase...",
-				}));
 				await gitOps.finishCherryPick(currentBranch, tempBranchName, {
 					createBackup: !noBackup,
 				});
@@ -327,7 +332,7 @@ export default function App({
 		}));
 
 		try {
-			await gitOps.cherryPick(commit, { allowEmpty });
+			await gitOps.cherryPick(commit, { allowEmpty: allowEmpty === true });
 			setState((previous) => ({
 				...previous,
 				currentCommitIndex: (previous.currentCommitIndex ?? -1) + 1,
@@ -587,7 +592,16 @@ export default function App({
 		{ isActive: true },
 	);
 
-	const sanitizedMessage = sanitizeString(state.message);
+	const isFinishing =
+		state.status === "loading" &&
+		state.commitsToPick !== undefined &&
+		state.currentCommitIndex !== undefined &&
+		state.tempBranchName !== undefined &&
+		state.currentBranch !== undefined &&
+		state.currentCommitIndex >= state.commitsToPick.length;
+	const sanitizedMessage = sanitizeString(
+		isFinishing ? "Finishing rebase..." : state.message,
+	);
 
 	return (
 		<Box flexDirection="column" padding={1}>
