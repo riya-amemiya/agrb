@@ -16,10 +16,10 @@
 	"scripts": {
 		"build": "tsc --noEmit && vite build",
 		"dev": "vite build --watch",
-		"test": "biome check .",
+		"test": "oxlint && oxfmt --check",
 		"eslint": "eslint src",
-		"lint": "biome check . --write",
-		"ci": "biome ci .",
+		"lint": "oxlint --fix && oxfmt",
+		"ci": "oxlint && oxfmt --check",
 		"prepublishOnly": "npm run build"
 	},
 	"files": [
@@ -52,7 +52,6 @@
 		"ink-spinner": "5.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.6",
 		"@eslint/js": "^10.0.1",
 		"@sindresorhus/tsconfig": "9.0.0",
 		"@types/bun": "1.4.4",
@@ -63,6 +62,8 @@
 		"eslint": "10.14.0",
 		"eslint-plugin-unicorn": "79.0.0",
 		"ink-testing-library": "4.0.0",
+		"oxfmt": "0.78.0",
+		"oxlint": "1.93.0",
 		"ts-node": "10.9.2",
 		"typescript": "7.0.2",
 		"vite": "8.3.6"

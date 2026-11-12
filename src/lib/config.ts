@@ -20,7 +20,7 @@ export const picklist = <T extends readonly unknown[]>(
 	message?: string,
 ): ValidateReturnType<string> => ({
 	type: "string",
-	message,
+	...(message === undefined ? {} : { message }),
 	validate: (value) => values.includes(value),
 });
 
