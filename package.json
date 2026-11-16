@@ -43,7 +43,7 @@
 		"ink-spinner": "5.0.0",
 		"react": "19.3.1",
 		"simple-git": "4.0.2",
-		"umt": "5.1.1"
+		"umt": "5.2.0"
 	},
 	"overrides": {
 		"react": "19.3.1",
@@ -56,8 +56,8 @@
 		"@sindresorhus/tsconfig": "9.0.0",
 		"@types/bun": "1.4.4",
 		"@types/react": "19.3.0",
-		"@typescript-eslint/eslint-plugin": "8.72.1",
-		"@typescript-eslint/parser": "8.72.1",
+		"@typescript-eslint/eslint-plugin": "8.72.2",
+		"@typescript-eslint/parser": "8.72.2",
 		"chalk": "6.0.1",
 		"eslint": "10.14.0",
 		"eslint-plugin-unicorn": "79.0.0",
@@ -66,6 +66,6 @@
 		"oxlint": "1.93.0",
 		"ts-node": "10.9.2",
 		"typescript": "7.0.2",
-		"vite": "8.3.6"
+		"vite": "8.3.8"
 	}
 }
